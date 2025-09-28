@@ -1,0 +1,243 @@
+<?php
+// index.php - Tableau de bord de l'administration (affichage conditionnel selon les droits)
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+
+// Inclure le gestionnaire de permissions
+require_once 'permissions.php';
+
+// Récupérer le statut de l'utilisateur depuis la session
+$userStatut = $_SESSION['user_statut'] ?? 7;
+$userLogin = $_SESSION['user_login'] ?? 'Utilisateur';
+
+// Définir les liens disponibles et leurs permissions
+$menuItems = [
+    [
+        'title' => '🏠 Accueil',
+        'url' => 'index.php',
+        'icon' => '🏠',
+        'allowedStatuts' => [1, 2, 3, 4, 5, 6], // Tout le monde sauf les lecteurs
+        'description' => 'Tableau de bord'
+    ],
+    [
+        'title' => '➕ Ajouter une fiche',
+        'url' => 'ajouter_fiche.php',
+        'icon' => '➕',
+        'allowedStatuts' => [1, 2, 3, 6], // Super-Admin, Admin Fiches, Rédacteur, Admin Simple
+        'description' => 'Créer une nouvelle fiche de personnage'
+    ],
+    [
+        'title' => '🔍 Modifier une fiche',
+        'url' => 'modifier_fiche.php',
+        'icon' => '🔍',
+        'allowedStatuts' => [1, 2, 3, 4, 6], // Super-Admin, Admin Fiches, Rédacteur, Valideur, Admin Simple
+        'description' => 'Rechercher et éditer une fiche existante'
+    ],
+    [
+        'title' => '👥 Gérer les utilisateurs',
+        'url' => 'gerer_utilisateurs.php',
+        'icon' => '👥',
+        'allowedStatuts' => [1], // Seulement le Super-Admin
+        'description' => 'Créer, modifier ou supprimer des comptes'
+    ],
+    [
+        'title' => '⚙️ Configurer le site',
+        'url' => 'configurer_site.php',
+        'icon' => '⚙️',
+        'allowedStatuts' => [1], // Seulement le Super-Admin
+        'description' => 'Modifier le logo, les couleurs et le texte du site'
+    ],
+    [
+        'title' => '📥 Télécharger la base',
+        'url' => 'download_db.php',
+        'icon' => '📥',
+        'allowedStatuts' => [1, 2, 6], // Super-Admin, Admin Fiches, Admin Simple
+        'description' => 'Sauvegarde complète de la base de données'
+    ],
+    [
+        'title' => '⚗️ Diagnostic de la base',
+        'url' => 'diagnostic_base.php',
+        'icon' => '⚗️',
+        'allowedStatuts' => [1], // Seulement le Super-Admin (outil technique)
+        'description' => 'Vérifie la base de données'
+    ],
+
+];
+
+// Fonction utilitaire pour vérifier si l'utilisateur a accès à un élément de menu
+function userCanAccess($allowedStatuts) {
+    return in_array($_SESSION['user_statut'], $allowedStatuts);
+}
+?>
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau de bord — Administration</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 3px solid #6c757d;
+        }
+        .header h1 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin: 0;
+            font-weight: 700;
+        }
+        .header p {
+            font-size: 1.2rem;
+            color: #6c757d;
+            margin: 1rem 0 0 0;
+        }
+        .user-info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: bold;
+            color: #495057;
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .menu-item {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 180px;
+        }
+        .menu-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            background: #f8f9fa;
+        }
+        .menu-item .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        .menu-item h3 {
+            font-size: 1.3rem;
+            margin: 0 0 0.5rem 0;
+            color: #2c3e50;
+        }
+        .menu-item p {
+            font-size: 0.95rem;
+            color: #6c757d;
+            margin: 0;
+            line-height: 1.5;
+        }
+        .logout-btn {
+            display: block;
+            width: 200px;
+            margin: 3rem auto 0;
+            padding: 15px;
+            background: #dc3545;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
+        }
+        .logout-btn:hover {
+            background: #c82333;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(220, 53, 69, 0.4);
+        }
+        .no-access {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+            font-style: italic;
+        }
+        @media (max-width: 768px) {
+            .container {
+                margin: 20px;
+                padding: 20px;
+            }
+            .header h1 {
+                font-size: 2rem;
+            }
+            .menu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Administration</h1>
+            <p>Gérez le contenu et la configuration du site</p>
+        </div>
+
+        <div class="user-info">
+            👤 Connecté en tant que : <strong><?= htmlspecialchars($userLogin) ?></strong> (ID Statut: <?= $userStatut ?>)
+        </div>
+
+        <?php
+        // Filtrer les éléments de menu accessibles à l'utilisateur
+        $accessibleItems = array_filter($menuItems, function($item) {
+            return userCanAccess($item['allowedStatuts']);
+        });
+
+        if (empty($accessibleItems)) {
+            echo '<div class="no-access">';
+            echo '<h3>⛔ Aucun accès autorisé</h3>';
+            echo '<p>Votre rôle ne vous permet pas d\'accéder à aucune fonctionnalité d\'administration.</p>';
+            echo '</div>';
+        } else {
+            echo '<div class="menu-grid">';
+            foreach ($accessibleItems as $item) {
+                echo '<a href="' . htmlspecialchars($item['url']) . '" class="menu-item">';
+                echo '<span class="icon">' . $item['icon'] . '</span>';
+                echo '<h3>' . htmlspecialchars($item['title']) . '</h3>';
+                echo '<p>' . htmlspecialchars($item['description']) . '</p>';
+                echo '</a>';
+            }
+            echo '</div>';
+        }
+        ?>
+
+        <a href="logout.php" class="logout-btn">🚪 Se déconnecter</a>
+    </div>
+</body>
+</html>
