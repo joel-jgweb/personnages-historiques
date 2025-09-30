@@ -195,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         // --- Gestion des métadonnées ---
         $derniere_modif = date('Y-m-d H:i:s');
         // Le valideur est enregistré seulement si on publie
-        $valideur = ($est_en_ligne == '1') ? ($userLogin ?? 'Système') : null;
+        $valideur = ($est_en_ligne == '1') ? ($_SESSION['nom_prenom'] ?? 'Système') : null;
 
         $sql = "UPDATE personnages SET 
                     Nom = ?, Metier = ?, Engagements = ?, Details = ?, Sources = ?, 

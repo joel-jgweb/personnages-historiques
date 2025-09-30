@@ -84,9 +84,9 @@ if (!empty($doc_descs)) {
 }
 
     // --- Gestion des métadonnées ---
-    $auteur = $_SESSION['user_login'] ?? 'Inconnu';
+    $auteur = $_SESSION['nom_prenom'] ?? 'Inconnu';
     $derniere_modif = date('Y-m-d H:i:s');
-    $valideur = ($est_en_ligne == '1') ? $auteur : null;
+    $valideur = ($est_en_ligne == '1') ? ($_SESSION['nom_prenom'] ?? 'Système') : null;
 
     if (empty($nom)) {
         $message = "<div class='alert alert-warning'>⚠️ Le champ 'Nom' est obligatoire.</div>";
@@ -198,7 +198,7 @@ if (!empty($doc_descs)) {
 
             <div class="form-group">
                 <label for="auteur">Auteur :</label>
-                <input type="text" name="auteur" id="auteur" value="<?= htmlspecialchars($_SESSION['user_login']) ?>" readonly>
+                <input type="text" name="auteur" id="auteur" value="<?= htmlspecialchars($_SESSION['nom_prenom']) ?>" readonly>
             </div>
 
             <div class="form-group">

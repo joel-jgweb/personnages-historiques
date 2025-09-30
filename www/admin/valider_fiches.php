@@ -45,9 +45,10 @@ try {
         } else {
             // Préparer la requête
             $placeholders = str_repeat('?,', count($fiches_a_publier) - 1) . '?';
-            $sql = "UPDATE personnages SET est_en_ligne = 1 WHERE ID_fiche IN ($placeholders)";
+            $sql = "UPDATE personnages SET est_en_ligne = 1, valideur = ? WHERE ID_fiche IN ($placeholders)";
+            $params = array_merge([$_SESSION['nom_prenom'] ?? 'Système'], $fiches_a_publier);
             $stmt = $pdo->prepare($sql);
-            $stmt->execute($fiches_a_publier);
+            $stmt->execute($params);
 
             $count = $stmt->rowCount();
             $message = "<div class='alert alert-success'>🎉 <strong>$count</strong> fiche(s) publiée(s) avec succès !</div>";

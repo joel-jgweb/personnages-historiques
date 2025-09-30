@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 // login.php
 session_start();
 require_once __DIR__ . '/../config.php';
@@ -21,8 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Veuillez remplir tous les champs.";
     } else {
         // Requête pour récupérer l'utilisateur
-        $stmt = $pdo->prepare("SELECT ID_utilisateur, login, mot_de_passe, ID_statut FROM utilisateurs WHERE login = ?");
-        $stmt->execute([$login]);
+       $stmt = $pdo->prepare("SELECT ID_utilisateur, login, prenom_nom, mot_de_passe, ID_statut FROM utilisateurs WHERE login = ?");
+       $stmt->execute([$login]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($user && password_verify($password, $user['mot_de_passe'])) {
@@ -30,7 +33,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_SESSION['user_id'] = $user['ID_utilisateur'];
             $_SESSION['user_login'] = $user['login'];
             $_SESSION['user_statut'] = $user['ID_statut'];
-
+            $_SESSION['nom_prenom'] = $user['prenom_nom'];
+            
             // Mettre à jour la date de dernier login
             $stmt = $pdo->prepare("UPDATE utilisateurs SET dernier_login = CURRENT_TIMESTAMP WHERE ID_utilisateur = ?");
             $stmt->execute([$user['ID_utilisateur']]);
