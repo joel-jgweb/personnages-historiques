@@ -1,15 +1,23 @@
 <?php
-// index.php - Tableau de bord de l'administration (affichage conditionnel selon les droits)
 session_start();
+
+// Gestion de l'inactivité (10 minutes)
+define('MAX_IDLE_TIME', 600);
+if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > MAX_IDLE_TIME)) {
+    session_unset();
+    session_destroy();
+    header("Location: login.php?timeout=1");
+    exit;
+}
+$_SESSION['LAST_ACTIVITY'] = time();
+
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
 
-// Inclure le gestionnaire de permissions
 require_once 'permissions.php';
 
-// Récupérer le statut de l'utilisateur depuis la session
 $userStatut = $_SESSION['user_statut'] ?? 7;
 $userLogin = $_SESSION['user_login'] ?? 'Utilisateur';
 
@@ -19,52 +27,87 @@ $menuItems = [
         'title' => '🏠 Accueil',
         'url' => 'index.php',
         'icon' => '🏠',
-        'allowedStatuts' => [1, 2, 3, 4, 5, 6], // Tout le monde sauf les lecteurs
+        'allowedStatuts' => [1, 2, 3, 4, 5, 6],
         'description' => 'Tableau de bord'
     ],
     [
         'title' => '➕ Ajouter une fiche',
         'url' => 'ajouter_fiche.php',
         'icon' => '➕',
-        'allowedStatuts' => [1, 2, 3, 6], // Super-Admin, Admin Fiches, Rédacteur, Admin Simple
+        'allowedStatuts' => [1, 2, 3, 6],
         'description' => 'Créer une nouvelle fiche de personnage'
     ],
     [
         'title' => '🔍 Modifier une fiche',
         'url' => 'modifier_fiche.php',
         'icon' => '🔍',
-        'allowedStatuts' => [1, 2, 3, 4, 6], // Super-Admin, Admin Fiches, Rédacteur, Valideur, Admin Simple
+        'allowedStatuts' => [1, 2, 3, 4, 6],
         'description' => 'Rechercher et éditer une fiche existante'
     ],
     [
         'title' => '👥 Gérer les utilisateurs',
         'url' => 'gerer_utilisateurs.php',
         'icon' => '👥',
-        'allowedStatuts' => [1], // Seulement le Super-Admin
+        'allowedStatuts' => [1],
         'description' => 'Créer, modifier ou supprimer des comptes'
     ],
     [
         'title' => '⚙️ Configurer le site',
         'url' => 'configurer_site.php',
         'icon' => '⚙️',
-        'allowedStatuts' => [1], // Seulement le Super-Admin
+        'allowedStatuts' => [1],
         'description' => 'Modifier le logo, les couleurs et le texte du site'
     ],
     [
         'title' => '📥 Télécharger la base',
         'url' => 'download_db.php',
         'icon' => '📥',
-        'allowedStatuts' => [1, 2, 6], // Super-Admin, Admin Fiches, Admin Simple
+        'allowedStatuts' => [1, 2, 6],
         'description' => 'Sauvegarde complète de la base de données'
     ],
     [
         'title' => '⚗️ Diagnostic de la base',
         'url' => 'diagnostic_base.php',
         'icon' => '⚗️',
-        'allowedStatuts' => [1], // Seulement le Super-Admin (outil technique)
+        'allowedStatuts' => [1],
         'description' => 'Vérifie la base de données'
     ],
-
+    // Ajouts demandés :
+    [
+        'title' => '⚡ Exécuter du SQL',
+        'url' => 'execute_sql.php',
+        'icon' => '⚡',
+        'allowedStatuts' => [1], // Super-Admin uniquement
+        'description' => 'Outil avancé pour requêtes SQL'
+    ],
+    [
+        'title' => '🚀 Publier toutes les fiches',
+        'url' => 'publier_toutes_fiches.php',
+        'icon' => '🚀',
+        'allowedStatuts' => [1], // Super-Admin uniquement
+        'description' => 'Publication massive des fiches'
+    ],
+    [
+        'title' => '🗑️ Supprimer une fiche',
+        'url' => 'supprimer_fiche.php',
+        'icon' => '🗑️',
+        'allowedStatuts' => [1,2,6],
+        'description' => 'Suppression sécurisée d’une fiche'
+    ],
+    [
+        'title' => '📄 Upload de documents',
+        'url' => 'upload_docs.php',
+        'icon' => '📄',
+        'allowedStatuts' => [1,2,6],
+        'description' => 'Ajouter des fichiers dans la base'
+    ],
+    [
+        'title' => '✅ Valider les fiches',
+        'url' => 'valider_fiches.php',
+        'icon' => '✅',
+        'allowedStatuts' => [1,2,4,6],
+        'description' => 'Valider les fiches en attente'
+    ],
 ];
 
 // Fonction utilitaire pour vérifier si l'utilisateur a accès à un élément de menu
@@ -90,97 +133,60 @@ function userCanAccess($allowedStatuts) {
         .container {
             max-width: 1000px;
             margin: 40px auto;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+            padding: 30px;
         }
         .header {
             text-align: center;
-            margin-bottom: 3rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 3px solid #6c757d;
+            margin-bottom: 30px;
         }
         .header h1 {
-            font-size: 2.5rem;
-            color: #2c3e50;
-            margin: 0;
-            font-weight: 700;
+            font-size: 2.8rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #764ba2;
         }
         .header p {
+            color: #667eea;
             font-size: 1.2rem;
-            color: #6c757d;
-            margin: 1rem 0 0 0;
         }
         .user-info {
-            background: #e9ecef;
-            padding: 15px;
-            border-radius: 10px;
             margin-bottom: 2rem;
-            text-align: center;
-            font-weight: bold;
-            color: #495057;
+            font-size: 1.1rem;
+            background: #f5f5ff;
+            border-radius: 5px;
+            padding: 10px 20px;
+            color: #333;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.07);
         }
         .menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 24px;
         }
         .menu-item {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-            transition: all 0.3s ease;
-            text-align: center;
-            text-decoration: none;
-            color: #333;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 180px;
+            background: #fafaff;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(102, 126, 234, 0.09);
+            padding: 30px 18px;
+            text-decoration: none;
+            color: #333;
+            transition: transform 0.2s, box-shadow 0.2s;
+            min-height: 175px;
+            position: relative;
         }
         .menu-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-            background: #f8f9fa;
-        }
-        .menu-item .icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            display: block;
-        }
-        .menu-item h3 {
-            font-size: 1.3rem;
-            margin: 0 0 0.5rem 0;
-            color: #2c3e50;
-        }
-        .menu-item p {
-            font-size: 0.95rem;
-            color: #6c757d;
-            margin: 0;
-            line-height: 1.5;
-        }
-        .logout-btn {
-            display: block;
-            width: 200px;
-            margin: 3rem auto 0;
-            padding: 15px;
-            background: #dc3545;
-            color: white;
-            text-align: center;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            transition: all 0.3s;
-            box-shadow: 0 4px 10px rgba(220, 53, 69, 0.3);
-        }
-        .logout-btn:hover {
-            background: #c82333;
-            transform: translateY(-3px);
+            transform: translateY(-4px) scale(1.03);
             box-shadow: 0 6px 15px rgba(220, 53, 69, 0.4);
+        }
+        .icon {
+            font-size: 2.7rem;
+            margin-bottom: 10px;
         }
         .no-access {
             text-align: center;
@@ -236,8 +242,6 @@ function userCanAccess($allowedStatuts) {
             echo '</div>';
         }
         ?>
-
-        <a href="logout.php" class="logout-btn">🚪 Se déconnecter</a>
     </div>
 </body>
 </html>

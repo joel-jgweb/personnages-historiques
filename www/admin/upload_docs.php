@@ -1,4 +1,13 @@
 <?php
+// gerer_utilisateurs.php - Gestion complète des utilisateurs et de leurs rôles
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit;
+}
+require_once 'permissions.php';
+checkUserPermission([1]);
+
 // ====================================================================
 // --- CONFIGURATION DES CHEMINS ---
 // ====================================================================
