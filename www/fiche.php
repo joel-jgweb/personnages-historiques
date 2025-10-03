@@ -106,27 +106,7 @@ try {
         .section-content a:hover {
             border-bottom: 1px solid <?= darkenColor($config['secondary_color'], 20) ?>;
         }
-        .metadata {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 2rem;
-            margin-bottom: 2rem;
-            background: #f8f9fa;
-            padding: 1.5rem;
-            border-radius: 12px;
-        }
-        .meta-item {
-            flex: 1;
-            min-width: 200px;
-        }
-        .meta-label {
-            font-weight: bold;
-            color: <?= htmlspecialchars($config['primary_color']) ?>;
-            margin-bottom: 0.3rem;
-        }
-        .meta-value {
-            color: #555;
-        }
+        /* On retire .metadata car supprimée */
         footer {
             text-align: center;
             padding: 1.5rem;
@@ -154,7 +134,6 @@ try {
         @media (max-width: 768px) {
             .container { padding: 1.5rem; }
             .fiche-title { font-size: 2rem; }
-            .metadata { flex-direction: column; gap: 1rem; }
         }
     </style>
 </head>
@@ -163,43 +142,28 @@ try {
         <div class="header">
             <a href="search.php" class="back-link">← Retour aux résultats</a>
             <h1 class="fiche-title"><?= htmlspecialchars($fiche['Nom']) ?></h1>
-            <?php if (!empty($fiche['Metier']) || !empty($fiche['Engagements'])): ?>
+            <?php
+            // Nouvelle fiche-subtitle : Données généalogiques, Métier, Engagements
+            $subtitleParts = [];
+            if (!empty($fiche['Donnees_genealogiques'])) {
+                $subtitleParts[] = htmlspecialchars($fiche['Donnees_genealogiques']);
+            }
+            if (!empty($fiche['Metier'])) {
+                $subtitleParts[] = htmlspecialchars($fiche['Metier']);
+            }
+            if (!empty($fiche['Engagements'])) {
+                $subtitleParts[] = htmlspecialchars($fiche['Engagements']);
+            }
+            if (count($subtitleParts) > 0): ?>
                 <div class="fiche-subtitle">
-                    <?php if (!empty($fiche['Metier'])): ?>
-                        <?= htmlspecialchars($fiche['Metier']) ?>
-                    <?php endif; ?>
-                    <?php if (!empty($fiche['Metier']) && !empty($fiche['Engagements'])): ?>
-                        •
-                    <?php endif; ?>
-                    <?php if (!empty($fiche['Engagements'])): ?>
-                        <?= htmlspecialchars($fiche['Engagements']) ?>
-                    <?php endif; ?>
+                    <?= implode(' • ', $subtitleParts) ?>
                 </div>
             <?php endif; ?>
         </div>
         <?php if (!empty($fiche['Photo'])): ?>
             <img src="<?= htmlspecialchars($fiche['Photo']) ?>" alt="Photo de <?= htmlspecialchars($fiche['Nom']) ?>" class="fiche-photo">
         <?php endif; ?>
-        <div class="metadata">
-            <?php if (!empty($fiche['Metier'])): ?>
-                <div class="meta-item">
-                    <div class="meta-label">Métier</div>
-                    <div class="meta-value"><?= htmlspecialchars($fiche['Metier']) ?></div>
-                </div>
-            <?php endif; ?>
-            <?php if (!empty($fiche['Engagements'])): ?>
-                <div class="meta-item">
-                    <div class="meta-label">Engagements</div>
-                    <div class="meta-value"><?= htmlspecialchars($fiche['Engagements']) ?></div>
-                </div>
-            <?php endif; ?>
-            <?php if (!empty($fiche['Donnees_genealogiques'])): ?>
-                <div class="meta-item">
-                    <div class="meta-label">Données généalogiques</div>
-                    <div class="meta-value"><?= htmlspecialchars($fiche['Donnees_genealogiques']) ?></div>
-                </div>
-            <?php endif; ?>
-        </div>
+        <!-- Zone .metadata supprimée -->
         <?php if (!empty($fiche['Details'])): ?>
             <div class="section">
                 <h2 class="section-title">Détails</h2>

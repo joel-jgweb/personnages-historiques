@@ -14,8 +14,6 @@ try {
     $engagement = $_GET['engagement'] ?? '';
     $lieu = $_GET['lieu'] ?? '';
     $periode = $_GET['periode'] ?? '';
-
-    // Tri sur Nom, insensible à la casse et aux accents E
     $sql = "SELECT ID_fiche, Nom, Metier, Engagements, Details, Photo FROM personnages WHERE est_en_ligne = 1";
     $params = [];
     if (!empty($query)) {
@@ -31,8 +29,6 @@ try {
         $sql .= " AND Engagements LIKE ?";
         $params[] = '%' . $engagement . '%';
     }
-    // Tri insensible à la casse et aux accents sur E uniquement
-    $sql .= " ORDER BY LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(Nom, 'É','e'), 'È','e'), 'Ê','e'), 'Ë','e'), 'é','e'), 'è','e'), 'ê','e'), 'ë','e')) COLLATE NOCASE ASC";
     if (!empty($params)) {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
