@@ -1,231 +1,200 @@
 <?php
-// fiche.php — Page de détail complète d'une fiche (mise à jour avec support Markdown)
-require_once __DIR__ . '/config.php';
-error_reporting(E_ALL);
 ini_set('display_errors', 1);
-$databasePath = __DIR__ . '/../data/portraits.sqlite';
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Connexion à la base et récupération de la fiche selon l'ID transmis (par GET ou autre)
+require_once __DIR__ . '/config.php';
+$dbPath = __DIR__ . '/../data/portraits.sqlite';
+$pdo = new PDO("sqlite:$dbPath");
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
 $fiche = null;
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    die("ID de fiche invalide.");
-}
-try {
-    $pdo = new PDO("sqlite:$databasePath");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $config = loadSiteConfig($pdo);
-    $stmt = $pdo->prepare("SELECT * FROM personnages WHERE ID_fiche = ? AND est_en_ligne = 1");
+if (isset($_GET['id'])) {
+    $stmt = $pdo->prepare('SELECT * FROM personnages WHERE ID_fiche = ?');
     $stmt->execute([$_GET['id']]);
-    $fiche = $stmt->fetch();
-    if (!$fiche) {
-        die("Fiche non trouvée.");
-    }
-} catch (Exception $e) {
-    die("❌ Erreur de base de données : " . $e->getMessage());
+    $fiche = $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+if (!$fiche) {
+    echo "<div style='color:red;font-weight:bold;'>Fiche introuvable !</div>";
+    exit;
 }
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <title><?= htmlspecialchars($fiche['Nom']) ?> — Fiche personnage</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($fiche['Nom']) ?> — <?= htmlspecialchars($config['site_title']) ?></title>
     <style>
-        body {
-            font-family: 'Georgia', serif;
-            background: #f8f9fa;
-            color: #333;
-            line-height: 1.8;
-            padding: 2rem;
-            margin: 0;
-        }
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            padding: 3rem;
-            border-radius: 20px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 2.5rem;
-            position: relative;
-        }
-        .back-link {
-            position: absolute;
-            left: 0;
-            top: 0;
-            text-decoration: none;
-            color: <?= htmlspecialchars($config['secondary_color']) ?>;
-            font-weight: bold;
-        }
-        .fiche-title {
-            font-size: 2.5rem;
-            color: <?= htmlspecialchars($config['primary_color']) ?>;
-            margin: 0.5rem 0 1rem 0;
-        }
-        .fiche-subtitle {
-            font-size: 1.2rem;
-            color: #7f8c8d;
-            margin-bottom: 2rem;
-        }
-        .fiche-photo {
-            width: 100%;
-            max-width: 300px;
-            margin: 0 auto 2rem;
-            border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            display: block;
-        }
-        .section {
-            margin-bottom: 2.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 2px solid #ecf0f1;
-        }
-        .section:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-        .section-title {
-            font-size: 1.5rem;
-            color: <?= htmlspecialchars($config['primary_color']) ?>;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 2px solid <?= htmlspecialchars($config['secondary_color']) ?>;
-            display: inline-block;
-        }
-        .section-content {
-            font-size: 1.1rem;
-            line-height: 1.7;
-        }
-        .section-content a {
-            color: <?= darkenColor($config['secondary_color'], 20) ?>;
-            text-decoration: none;
-            border-bottom: 1px dotted <?= htmlspecialchars($config['secondary_color']) ?>;
-        }
-        .section-content a:hover {
-            border-bottom: 1px solid <?= darkenColor($config['secondary_color'], 20) ?>;
-        }
-        /* On retire .metadata car supprimée */
-        footer {
-            text-align: center;
-            padding: 1.5rem;
-            background: rgba(0,0,0,0.05);
-            margin-top: 2rem;
-            font-size: 0.9rem;
-            border-radius: 10px;
-        }
-        /* --- Style pour les tableaux --- */
-        .resource-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
-        }
-        .resource-table th,
-        .resource-table td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-        .resource-table th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-        @media (max-width: 768px) {
-            .container { padding: 1.5rem; }
-            .fiche-title { font-size: 2rem; }
+        body { font-family: "Segoe UI", Arial, sans-serif; background: #f7f7fc; margin: 0; }
+        .container { max-width: 960px; margin: 40px auto 40px auto; background: #fff; padding: 40px 30px 30px 30px; border-radius: 14px; box-shadow: 0 6px 24px rgba(0,0,0,0.08);}
+        h1 { color: #2c2c2c; font-size:2.3em; text-align:center; font-weight:600; margin-bottom:12px;}
+        h2, h3 { color: #333; margin-top: 36px; margin-bottom:12px; font-weight:500;}
+        .meta { font-size:1.08em; margin-bottom:22px; color:#555; background:#f5f7fa; padding:10px 18px; border-radius:8px; box-shadow:0 2px 10px #e2e7fa;}
+        .section { margin-bottom:28px; }
+        .icono-row { display:flex;gap:22px;flex-wrap:wrap;margin-top:12px;}
+        .icono-col { text-align:center; margin-bottom:22px;}
+        .icono-col img { max-width:120px;max-height:120px;border:1.5px solid #aaa;border-radius:10px;cursor:pointer;transition:box-shadow .2s;}
+        .icono-col img:hover { box-shadow: 0 0 12px #0052cc; }
+        .icono-desc { font-size:0.99em;color:#444;margin-top:6px;background:#f7f7fa;border-radius:4px;padding:2px 4px;}
+        #modalLightbox { display:none; position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.85);align-items:center;justify-content:center;}
+        #modalLightbox .modal-content { position:relative;text-align:center;}
+        #modalImage { max-width:90vw;max-height:80vh;border-radius:14px;box-shadow:0px 0px 32px #000;}
+        #modalDesc { color:#fff;font-size:1.18em;margin-top:16px;}
+        #modalClose { position:absolute;top:10px;right:10px;background:#fff;color:#333;border-radius:50%;width:38px;height:38px;border:none;font-size:2em;cursor:pointer; }
+        table.docs { border-collapse:collapse;width:100%;margin-top:10px;background:#f7f7fa;}
+        table.docs th,table.docs td { border:1px solid #ddd;padding:10px 8px; }
+        table.docs th { background:#eaeaea;font-weight:500;text-align:left; }
+        table.docs td { font-size:1em; }
+        .doc-ico { vertical-align:middle; margin-right:8px;}
+        @media (max-width: 700px) {
+            .container { padding: 10px; }
+            .icono-row {gap:10px;}
+            table.docs th,table.docs td { padding:6px 2px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <a href="search.php" class="back-link">← Retour aux résultats</a>
-            <h1 class="fiche-title"><?= htmlspecialchars($fiche['Nom']) ?></h1>
-            <?php
-            // Nouvelle fiche-subtitle : Données généalogiques, Métier, Engagements
-            $subtitleParts = [];
-            if (!empty($fiche['Donnees_genealogiques'])) {
-                $subtitleParts[] = htmlspecialchars($fiche['Donnees_genealogiques']);
-            }
-            if (!empty($fiche['Metier'])) {
-                $subtitleParts[] = htmlspecialchars($fiche['Metier']);
-            }
-            if (!empty($fiche['Engagements'])) {
-                $subtitleParts[] = htmlspecialchars($fiche['Engagements']);
-            }
-            if (count($subtitleParts) > 0): ?>
-                <div class="fiche-subtitle">
-                    <?= implode(' • ', $subtitleParts) ?>
-                </div>
-            <?php endif; ?>
+<div class="container">
+
+    <h1><?= htmlspecialchars($fiche['Nom']) ?></h1>
+    <div class="meta">
+        <strong>Métier :</strong> <?= htmlspecialchars($fiche['Metier']) ?><br>
+        <strong>Auteur :</strong> <?= htmlspecialchars($fiche['auteur']) ?>
+        <?php if (!empty($fiche['valideur'])): ?>
+            <br><strong>Validée par :</strong> <?= htmlspecialchars($fiche['valideur']) ?>
+        <?php endif; ?>
+        <br><strong>Dernière modification :</strong> <?= htmlspecialchars($fiche['derniere_modif']) ?>
+    </div>
+
+    <?php if (!empty($fiche['Photo'])): ?>
+        <div class="section">
+            <h3>Photo principale</h3>
+            <img src="<?= htmlspecialchars($fiche['Photo']) ?>" alt="Photo principale" style="max-width:220px;max-height:220px;border:2px solid #bbb;border-radius:12px;">
         </div>
-        <?php if (!empty($fiche['Photo'])): ?>
-            <img src="<?= htmlspecialchars($fiche['Photo']) ?>" alt="Photo de <?= htmlspecialchars($fiche['Nom']) ?>" class="fiche-photo">
-        <?php endif; ?>
-        <!-- Zone .metadata supprimée -->
-        <?php if (!empty($fiche['Details'])): ?>
-            <div class="section">
-                <h2 class="section-title">Détails</h2>
-                <div class="section-content">
-                    <?= markdownToHtml($fiche['Details']) ?>
-                </div>
+    <?php endif; ?>
+
+    <?php if (!empty($fiche['Iconographie'])): ?>
+        <div class="section">
+            <h3>Iconographie</h3>
+            <div class="icono-row">
+            <?php
+            $iconos = explode("\n", $fiche['Iconographie']);
+            foreach ($iconos as $chemin) {
+                $filename = basename($chemin);
+                $desc = '';
+                try {
+                    $stmt = $pdo->prepare("SELECT description FROM gesdoc WHERE nom_fichier = ?");
+                    $stmt->execute([$filename]);
+                    $desc = $stmt->fetchColumn();
+                } catch (Exception $e) {}
+                $public_url = "/fetch_doc.php?file=" . urlencode($filename);
+                echo '<div class="icono-col">';
+                echo '<a href="#" onclick="openModal(\'' . $public_url . '\', \'' . htmlspecialchars(addslashes($desc)) . '\');return false;">';
+                echo '<img src="' . $public_url . '" alt="' . htmlspecialchars($desc) . '"></a>';
+                echo '<div class="icono-desc">' . htmlspecialchars($desc) . '</div>';
+                echo '</div>';
+            }
+            ?>
             </div>
-        <?php endif; ?>
-        <?php if (!empty($fiche['Sources'])): ?>
-            <div class="section">
-                <h2 class="section-title">Sources</h2>
-                <div class="section-content">
-                    <?= markdownToHtml($fiche['Sources']) ?>
-                </div>
-            </div>
-        <?php endif; ?>
-        <?php if (!empty($fiche['Iconographie']) || !empty($fiche['Documents'])): ?>
-            <div class="section">
-                <h2 class="section-title">Ressources complémentaires</h2>
-                <?php if (!empty($fiche['Iconographie']) && trim($fiche['Iconographie']) !== "| Description | Télécharger |\n|-------------|-------------|"): ?>
-                    <h3>Iconographie</h3>
-                    <div class="section-content">
-                        <?= markdownTableToHtml($fiche['Iconographie']) ?>
-                    </div>
-                <?php endif; ?>
-                <?php if (!empty($fiche['Documents']) && trim($fiche['Documents']) !== "| Description | Télécharger |\n|-------------|-------------|"): ?>
-                    <h3>Documents</h3>
-                    <div class="section-content">
-                        <?= markdownTableToHtml($fiche['Documents']) ?>
-                    </div>
-                <?php endif; ?>
-            </div>
-        <?php endif; ?>
-    </div>
-    <!-- Métadonnées de rédaction -->
-    <div style="
-        text-align: center;
-        font-size: 0.9rem;
-        color: #6c757d;
-        margin-top: 2.5rem;
-        padding-top: 1.5rem;
-        border-top: 1px solid #e9ecef;
-        font-style: italic;
-    ">
-        <?php if (!empty($fiche['auteur']) || !empty($fiche['derniere_modif'])): ?>
-            Rédaction : 
-            <span style="font-weight: bold; font-style: normal; color: #495057;">
-                <?= htmlspecialchars($fiche['auteur'] ?? '—') ?>
-            </span>
-            <?php if (!empty($fiche['derniere_modif'])): ?>
-                — Dernière modification : 
-                <span style="font-weight: bold; font-style: normal; color: #495057;">
-                    <?= htmlspecialchars($fiche['derniere_modif']) ?>
-                </span>
-            <?php endif; ?>
-        <?php endif; ?>
-    </div>
-    <footer>
-        <p>
-            <?= htmlspecialchars($config['association_name']) ?><br>
-            <?= nl2br(htmlspecialchars($config['association_address'])) ?>
-        </p>
-    </footer>
+        </div>
+    <?php endif; ?>
+
+    <?php if (!empty($fiche['Documents'])): ?>
+        <div class="section">
+            <h3>Documents associés</h3>
+            <table class="docs">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Fichier</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php
+                $docs = explode("\n", $fiche['Documents']);
+                foreach ($docs as $chemin) {
+                    $filename = basename($chemin);
+                    $desc = '';
+                    try {
+                        $stmt = $pdo->prepare("SELECT description FROM gesdoc WHERE nom_fichier = ?");
+                        $stmt->execute([$filename]);
+                        $desc = $stmt->fetchColumn();
+                    } catch (Exception $e) {}
+                    $public_url = "/fetch_doc.php?file=" . urlencode($filename);
+                    // Icône selon le type
+                    if (preg_match('/\.(jpg|jpeg|png|gif)$/i', $chemin)) {
+                        $icon = '<img src="' . $public_url . '" class="doc-ico" style="max-width:32px;max-height:32px;border-radius:6px;border:1px solid #bbb;">';
+                    } elseif (preg_match('/\.pdf$/i', $chemin)) {
+                        $icon = '<span class="doc-ico" style="font-size:20px;">📄</span>';
+                    } elseif (preg_match('/\.txt$/i', $chemin)) {
+                        $icon = '<span class="doc-ico" style="font-size:20px;">📄</span>';
+                    } else {
+                        $icon = '<span class="doc-ico" style="font-size:20px;">📎</span>';
+                    }
+                    echo '<tr>';
+                    echo '<td>' . htmlspecialchars($desc) . '</td>';
+                    echo '<td>' . $icon . ' <a href="' . $public_url . '" target="_blank">' . htmlspecialchars($filename) . '</a></td>';
+                    echo '</tr>';
+                }
+                ?>
+                </tbody>
+            </table>
+        </div>
+    <?php endif; ?>
+
+    <?php if (!empty($fiche['Engagements'])): ?>
+        <div class="section">
+            <h3>Engagements</h3>
+            <div><?= nl2br(htmlspecialchars($fiche['Engagements'])) ?></div>
+        </div>
+    <?php endif; ?>
+
+    <?php if (!empty($fiche['Details'])): ?>
+        <div class="section">
+            <h3>Détails</h3>
+            <div><?= nl2br(htmlspecialchars($fiche['Details'])) ?></div>
+        </div>
+    <?php endif; ?>
+
+    <?php if (!empty($fiche['Sources'])): ?>
+        <div class="section">
+            <h3>Sources</h3>
+            <div><?= nl2br(htmlspecialchars($fiche['Sources'])) ?></div>
+        </div>
+    <?php endif; ?>
+
+    <?php if (!empty($fiche['Donnees_genealogiques'])): ?>
+        <div class="section">
+            <h3>Données généalogiques</h3>
+            <div><?= nl2br(htmlspecialchars($fiche['Donnees_genealogiques'])) ?></div>
+        </div>
+    <?php endif; ?>
+
+</div>
+<!-- Modal lightbox pour les photos -->
+<div id="modalLightbox">
+  <div class="modal-content">
+    <img id="modalImage" src="" alt="">
+    <div id="modalDesc"></div>
+    <button id="modalClose" onclick="closeModal()">×</button>
+  </div>
+</div>
+<script>
+function openModal(src, desc) {
+    document.getElementById("modalImage").src = src;
+    document.getElementById("modalDesc").textContent = desc;
+    document.getElementById("modalLightbox").style.display = "flex";
+}
+function closeModal() {
+    document.getElementById("modalLightbox").style.display = "none";
+    document.getElementById("modalImage").src = "";
+}
+document.getElementById("modalLightbox").onclick = function(e) {
+    if(e.target === this) closeModal();
+};
+</script>
 </body>
 </html>

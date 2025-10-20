@@ -1,25 +1,25 @@
 <?php
-// ajouter_fiche.php - Création d'une fiche avec éditeur restreint et saisie structurée pour les tableaux
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit;
 }
-
 require_once 'permissions.php';
-// Autorise : Rédacteur Fiches (3), Administrateur Fiches (2), Super-Administrateur (1), Administrateur Simple (6)
 checkUserPermission([1, 2, 3, 6]);
-
 require_once '../config.php';
 $dbPath = __DIR__ . '/../../data/portraits.sqlite';
 $message = '';
+$pdo = new PDO("sqlite:$dbPath");
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-try {
-    $pdo = new PDO("sqlite:$dbPath");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("❌ Erreur de connexion à la base de données : " . $e->getMessage());
-}
+$user_statut = $_SESSION['user_statut'] ?? null;
+$user_nom_prenom = $_SESSION['nom_prenom'] ?? null;
+$is_admin = in_array($user_statut, [1,2,6]);
+$is_contrib = $user_statut == 3;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'ajouter') {
     $nom = trim($_POST['Nom'] ?? '');
@@ -30,63 +30,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $donnees_genealogiques = $_POST['Donnees_genealogiques'] ?? '';
     $photo = $_POST['Photo'] ?? '';
     $est_en_ligne = $_POST['est_en_ligne'] ?? '0';
-// --- Génération du tableau pour Iconographie ---
-$icono_descs = $_POST['iconographie_description'] ?? [];
-$icono_links = $_POST['iconographie_lien'] ?? [];
-$iconographie = '';
 
-if (!empty($icono_descs)) {
-    $iconographie_lines = ["| Description | Télécharger |", "|-------------|-------------|"];
-    foreach ($icono_descs as $i => $desc) {
-        if (!empty($desc) || !empty($icono_links[$i])) {
-            $desc_clean = str_replace(['|', "\n"], '', $desc);
-            $link_clean = str_replace(['|', "\n"], '', $icono_links[$i]);
-            $link_markdown = urlToMarkdownLink($link_clean, 'Télécharger');
-            $iconographie_lines[] = "| $desc_clean | $link_markdown |";
+    $icono_links = $_POST['iconographie_lien'] ?? [];
+    $doc_links = $_POST['documents_lien'] ?? [];
+
+    // Si contributeur, pas de gestion docs/images et fiche toujours hors ligne
+    if ($is_contrib) {
+        $est_en_ligne = '0';
+        $icono_links = [];
+        $doc_links = [];
+    }
+
+    // Update gesdoc descriptions (seulement admin/valideur/super-user)
+    if ($is_admin && isset($_POST['description_gesdoc'])) {
+        foreach ($_POST['description_gesdoc'] as $chemin => $desc) {
+            $filename = basename($chemin);
+            $stmt = $pdo->prepare("UPDATE gesdoc SET description = :desc WHERE nom_fichier = :nom");
+            $stmt->execute([':desc' => $desc, ':nom' => $filename]);
         }
     }
-    if (count($iconographie_lines) > 2) {
-        $iconographie = implode("\n", $iconographie_lines);
-    }
-}
-   // --- Génération du tableau pour Documents ---
-$doc_descs = $_POST['documents_description'] ?? [];
-$doc_links = $_POST['documents_lien'] ?? [];
-$documents = ''; // Valeur par défaut : champ vide
 
-// Ne générer le tableau que s'il y a au moins une description ou un lien
-if (!empty($doc_descs)) {
-    $documents_lines = ["| Description | Télécharger |", "|-------------|-------------|"];
-    foreach ($doc_descs as $i => $desc) {
-        $link = $doc_links[$i] ?? '';
-        // Ne pas ajouter de ligne si les deux champs sont vides
-        if (empty($desc) && empty($link)) {
-            continue;
-        }
-        // Nettoyer les caractères interdits dans un tableau Markdown
-        $desc_clean = str_replace(['|', "\n"], '', $desc);
-        $link_clean = str_replace(['|', "\n"], '', $link);
-        
-        // Transformer une URL brute en lien Markdown [Télécharger](url)
-        if (!empty($link_clean) && filter_var($link_clean, FILTER_VALIDATE_URL)) {
-            $link_markdown = "[Télécharger]($link_clean)";
-        } else {
-            // Si ce n'est pas une URL valide, garder le texte tel quel (ou vide)
-            $link_markdown = $link_clean;
-        }
-        
-        $documents_lines[] = "| $desc_clean | $link_markdown |";
-    }
-    // Ne sauvegarder le tableau que s'il contient au moins une ligne de données (au-delà de l'en-tête)
-    if (count($documents_lines) > 2) {
-        $documents = implode("\n", $documents_lines);
-    }
-}
+    $iconographie = implode("\n", $icono_links);
+    $documents = implode("\n", $doc_links);
 
-    // --- Gestion des métadonnées ---
-    $auteur = $_SESSION['nom_prenom'] ?? 'Inconnu';
+    $auteur = $user_nom_prenom ?? 'Inconnu';
     $derniere_modif = date('Y-m-d H:i:s');
-    $valideur = ($est_en_ligne == '1') ? ($_SESSION['nom_prenom'] ?? 'Système') : null;
+    $valideur = ($est_en_ligne == '1') ? $auteur : null;
 
     if (empty($nom)) {
         $message = "<div class='alert alert-warning'>⚠️ Le champ 'Nom' est obligatoire.</div>";
@@ -110,7 +79,6 @@ if (!empty($doc_descs)) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -118,159 +86,265 @@ if (!empty($doc_descs)) {
     <title>➕ Ajouter une fiche</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/admin/js/simplemde/simplemde.min.css">
+    <script src="/admin/js/simplemde/simplemde.min.js"></script>
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); position: relative; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1);}
         h1 { text-align: center; color: #333; }
         label { font-weight: bold; display: block; margin-top: 15px; }
         input[type="text"], textarea, select { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
-        textarea { height: 100px; resize: vertical; }
+        textarea { height: 120px; resize: vertical; }
         button { background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px; }
-        button:hover { background-color: #218838; }
-        .alert { padding: 10px; margin: 20px 0; border-radius: 4px; }
-        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
-        .alert-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .form-group { margin-bottom: 15px; }
-        .btn-download { position: absolute; top: 20px; right: 20px; background-color: #dc3545; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; }
-        .btn-download:hover { background-color: #c82333; text-decoration: none; }
-        .info-text { font-size: 0.9em; color: #6c757d; margin-top: 0.5rem; }
-        .resource-pair { display: flex; gap: 10px; margin-bottom: 10px; }
-        .resource-pair input { flex: 1; }
-        .btn-add { background: #17a2b8; padding: 5px 10px; font-size: 0.9rem; }
+        .resource-pair { display: flex; gap: 10px; margin-bottom: 10px; align-items: center;}
+        .resource-pair input[type="text"] { flex: 2; }
+        .resource-pair input[type="hidden"] { flex: 0; }
+        .resource-pair .filepath { flex: 3; font-size:0.9em; color:#333; background:#f8f8f8; border:1px solid #ddd; padding:2px 6px; border-radius:4px;}
+        .resource-pair img { max-width:80px;max-height:80px;border:1px solid #aaa; background:#fff;}
+        .resource-pair .doc-link { font-size:0.95em; margin-right:8px;}
+        .btn-upload { background: #0052cc; color: #fff; padding: 5px 10px; margin-left: 10px; font-size: 0.9rem; }
         .btn-remove { background: #dc3545; padding: 5px 10px; font-size: 0.9rem; }
+        #uploadModal { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.4); display:none; align-items:center; justify-content:center; z-index:9999;}
+        #uploadModal .modal-content { background: #fff; padding:20px; border-radius:8px; min-width:300px; box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+        #descError { color: #dc3545; font-size: 0.95em; margin: 5px 0 0 0; display:none;}
+        .select-emoji option[value="0"] { color: #c00; }
+        .select-emoji option[value="1"] { color: #28a745; }
+        .alert-info { background:#eef; color:#0052cc; border:1px solid #bcd; padding:10px; border-radius:4px; margin:10px 0;}
+        .alert-danger { background:#fee; color:#c00; border:1px solid #c00; padding:10px; border-radius:4px; margin:10px 0;}
     </style>
 </head>
 <body>
     <div class="container">
-      
-        <h1>➕ Ajouter une nouvelle fiche</h1>
-        <?php if ($message): ?><?= $message ?><?php endif; ?>
-        <form method="POST" action="">
-            <input type="hidden" name="action" value="ajouter">
-            <div class="form-group">
-                <label for="Nom">Nom * :</label>
-                <input type="text" name="Nom" id="Nom" value="<?= htmlspecialchars($_POST['Nom'] ?? '') ?>" required>
-            </div>
-            <div class="form-group">
-                <label for="Metier">Métier :</label>
-                <textarea name="Metier" id="Metier"><?= htmlspecialchars($_POST['Metier'] ?? '') ?></textarea>
-            </div>
-            <div class="form-group">
-                <label for="Engagements">Engagements :</label>
-                <textarea name="Engagements" id="Engagements"><?= htmlspecialchars($_POST['Engagements'] ?? '') ?></textarea>
-            </div>
-            <div class="form-group">
-                <label for="Details">Détails :</label>
-                <textarea name="Details" id="Details"><?= htmlspecialchars($_POST['Details'] ?? '') ?></textarea>
-            </div>
-            <div class="form-group">
-                <label for="Sources">Sources :</label>
-                <textarea name="Sources" id="Sources"><?= htmlspecialchars($_POST['Sources'] ?? '') ?></textarea>
-            </div>
-            <div class="form-group">
-                <label for="Donnees_genealogiques">Données généalogiques :</label>
-                <textarea name="Donnees_genealogiques" id="Donnees_genealogiques"><?= htmlspecialchars($_POST['Donnees_genealogiques'] ?? '') ?></textarea>
-            </div>
-
-            <!-- Section Iconographie -->
-            <div class="form-group">
-                <label>Iconographie</label>
-                <div id="iconographie-container">
-                    <!-- Les paires seront ajoutées ici par JS -->
-                </div>
-                <button type="button" class="btn-add" onclick="addResourcePair('iconographie')">➕ Ajouter une ligne</button>
-            </div>
-
-            <!-- Section Documents -->
-            <div class="form-group">
-                <label>Documents</label>
-                <div id="documents-container">
-                    <!-- Les paires seront ajoutées ici par JS -->
-                </div>
-                <button type="button" class="btn-add" onclick="addResourcePair('documents')">➕ Ajouter une ligne</button>
-            </div>
-
-            <div class="form-group">
-                <label for="Photo">Photo (URL ou chemin relatif) :</label>
-                <input type="text" name="Photo" id="Photo" value="<?= htmlspecialchars($_POST['Photo'] ?? '') ?>">
-            </div>
-
-            <div class="form-group">
-                <label for="auteur">Auteur :</label>
-                <input type="text" name="auteur" id="auteur" value="<?= htmlspecialchars($_SESSION['nom_prenom']) ?>" readonly>
-            </div>
-
-            <div class="form-group">
-                <label for="est_en_ligne">Statut de publication :</label>
+      <h1>➕ Ajouter une nouvelle fiche</h1>
+      <?php if ($message): ?><?= $message ?><?php endif; ?>
+      <form method="POST" action="">
+        <input type="hidden" name="action" value="ajouter">
+        <div class="form-group">
+            <label for="Nom">Nom * :</label>
+            <input type="text" name="Nom" id="Nom" value="<?= isset($_POST['Nom']) ? htmlspecialchars($_POST['Nom']) : '' ?>" required>
+        </div>
+        <div class="form-group">
+            <label for="Metier">Métier :</label>
+            <textarea name="Metier" id="Metier"><?= isset($_POST['Metier']) ? htmlspecialchars($_POST['Metier']) : '' ?></textarea>
+        </div>
+        <div class="form-group">
+            <label for="Engagements">Engagements :</label>
+            <textarea name="Engagements" id="Engagements"><?= isset($_POST['Engagements']) ? htmlspecialchars($_POST['Engagements']) : '' ?></textarea>
+        </div>
+        <div class="form-group">
+            <label for="Details">Détails :</label>
+            <textarea name="Details" id="Details"><?= isset($_POST['Details']) ? htmlspecialchars($_POST['Details']) : '' ?></textarea>
+        </div>
+        <div class="form-group">
+            <label for="Sources">Sources :</label>
+            <textarea name="Sources" id="Sources"><?= isset($_POST['Sources']) ? htmlspecialchars($_POST['Sources']) : '' ?></textarea>
+        </div>
+        <div class="form-group">
+            <label for="Donnees_genealogiques">Données généalogiques :</label>
+            <textarea name="Donnees_genealogiques" id="Donnees_genealogiques"><?= isset($_POST['Donnees_genealogiques']) ? htmlspecialchars($_POST['Donnees_genealogiques']) : '' ?></textarea>
+        </div>
+        <div class="form-group">
+            <label for="Photo">Photo (URL ou chemin relatif) :</label>
+            <input type="text" name="Photo" id="Photo" value="<?= isset($_POST['Photo']) ? htmlspecialchars($_POST['Photo']) : '' ?>">
+        </div>
+        <div class="form-group">
+            <label for="auteur">Auteur :</label>
+            <input type="text" name="auteur" id="auteur" value="<?= isset($_SESSION['nom_prenom']) ? htmlspecialchars($_SESSION['nom_prenom']) : '' ?>" readonly>
+        </div>
+        <div class="form-group">
+            <label>Iconographie</label>
+            <div id="iconographie-container">
                 <?php
-                $roles_autorises = [1, 2, 4, 6];
-                $peut_modifier = in_array($_SESSION['user_statut'], $roles_autorises);
-                $valeur_actuelle = $_POST['est_en_ligne'] ?? '0';
+                if ($is_admin && !empty($_POST['iconographie_lien'])) {
+                    foreach ($_POST['iconographie_lien'] as $chemin) {
+                        $filename = basename($chemin);
+                        $desc = '';
+                        try {
+                            $stmt = $pdo->prepare("SELECT description FROM gesdoc WHERE nom_fichier = ?");
+                            $stmt->execute([$filename]);
+                            $desc = $stmt->fetchColumn();
+                        } catch (Exception $e) {}
+                        $is_img = preg_match('/\.(jpg|jpeg|png|gif)$/i', $chemin);
+                        $public_url = "/fetch_doc.php?file=" . urlencode($filename);
+                        echo '<div class="resource-pair">';
+                        echo '<input type="text" name="description_gesdoc[' . htmlspecialchars($chemin) . ']" value="' . htmlspecialchars($desc) . '">';
+                        echo '<input type="hidden" name="iconographie_lien[]" value="' . htmlspecialchars($chemin) . '">';
+                        if ($is_img) echo '<img src="' . $public_url . '" style="max-width:80px;max-height:80px;">';
+                        echo '<span class="filepath">' . htmlspecialchars($chemin) . '</span>';
+                        echo '<button type="button" class="btn-remove" onclick="this.parentElement.remove()">🗑️</button>';
+                        echo '</div>';
+                    }
+                }
                 ?>
-                <select name="est_en_ligne" id="est_en_ligne" <?= $peut_modifier ? '' : 'disabled title="Seuls les valideurs et administrateurs peuvent publier."' ?>>
-                    <option value="0" <?= ($valeur_actuelle === '0') ? 'selected' : '' ?>>🔴 Hors ligne (brouillon)</option>
-                    <option value="1" <?= ($valeur_actuelle === '1') ? 'selected' : '' ?>>✅ En ligne (publique)</option>
-                </select>
-                <?php if (!$peut_modifier): ?>
-                    <input type="hidden" name="est_en_ligne" value="<?= $valeur_actuelle ?>">
-                    <p class="info-text"><em>ℹ️ Seuls les valideurs et administrateurs peuvent publier une fiche.</em></p>
-                <?php endif; ?>
             </div>
-
-            <button type="submit">💾 Créer la fiche</button>
-        </form>
+            <?php if ($is_admin): ?>
+            <button type="button" class="btn-upload" onclick="openUploadModal('iconographie')">📤 Ajouter une image</button>
+            <?php else: ?>
+            <div class="alert-info">Pour ajouter ou retirer des images, contactez l’administrateur.</div>
+            <?php endif; ?>
+        </div>
+        <div class="form-group">
+            <label>Documents</label>
+            <div id="documents-container">
+                <?php
+                if ($is_admin && !empty($_POST['documents_lien'])) {
+                    foreach ($_POST['documents_lien'] as $chemin) {
+                        $filename = basename($chemin);
+                        $desc = '';
+                        try {
+                            $stmt = $pdo->prepare("SELECT description FROM gesdoc WHERE nom_fichier = ?");
+                            $stmt->execute([$filename]);
+                            $desc = $stmt->fetchColumn();
+                        } catch (Exception $e) {}
+                        $is_img = preg_match('/\.(jpg|jpeg|png|gif)$/i', $chemin);
+                        $is_pdf = preg_match('/\.pdf$/i', $chemin);
+                        $is_txt = preg_match('/\.txt$/i', $chemin);
+                        $public_url = "/fetch_doc.php?file=" . urlencode($filename);
+                        echo '<div class="resource-pair">';
+                        echo '<input type="text" name="description_gesdoc[' . htmlspecialchars($chemin) . ']" value="' . htmlspecialchars($desc) . '">';
+                        echo '<input type="hidden" name="documents_lien[]" value="' . htmlspecialchars($chemin) . '">';
+                        if ($is_img) {
+                            echo '<img src="' . $public_url . '" style="max-width:80px;max-height:80px;">';
+                        } elseif ($is_pdf) {
+                            echo '<a class="doc-link" href="' . $public_url . '" target="_blank">📄 PDF</a>';
+                        } elseif ($is_txt) {
+                            echo '<a class="doc-link" href="' . $public_url . '" target="_blank">📄 TXT</a>';
+                        }
+                        echo '<span class="filepath">' . htmlspecialchars($chemin) . '</span>';
+                        echo '<button type="button" class="btn-remove" onclick="this.parentElement.remove()">🗑️</button>';
+                        echo '</div>';
+                    }
+                }
+                ?>
+            </div>
+            <?php if ($is_admin): ?>
+            <button type="button" class="btn-upload" onclick="openUploadModal('documents')">📤 Ajouter un document</button>
+            <?php else: ?>
+            <div class="alert-info">Pour ajouter ou retirer des documents, contactez l’administrateur.</div>
+            <?php endif; ?>
+        </div>
+        <div class="form-group">
+            <label for="est_en_ligne">Statut de publication :</label>
+            <select name="est_en_ligne" id="est_en_ligne" class="select-emoji" <?= $is_contrib ? 'disabled' : '' ?>>
+                <option value="0" selected>🔴 Brouillon / Hors ligne</option>
+                <option value="1" <?= (isset($_POST['est_en_ligne']) && $_POST['est_en_ligne'] == '1' && $is_admin) ? 'selected' : '' ?>>🟩 Publié / En ligne</option>
+            </select>
+            <?php if ($is_contrib): ?>
+                <div class="alert-info">Vous ne pouvez pas publier votre fiche.</div>
+            <?php endif; ?>
+        </div>
+        <button type="submit">Créer la fiche</button>
+      </form>
     </div>
-
-    <script src="/admin/js/simplemde/simplemde.min.js"></script>
+    <div id="uploadModal">
+      <div class="modal-content">
+        <input type="file" id="fileInput" />
+        <label for="descInput">Description (obligatoire) :</label>
+        <input type="text" id="descInput" maxlength="150" required>
+        <div id="descError">La description est obligatoire.</div>
+        <button type="button" onclick="uploadFile()">Envoyer</button>
+        <button type="button" onclick="closeUploadModal()">Annuler</button>
+      </div>
+    </div>
     <script>
-        // Initialiser SimpleMDE en mode restreint
-        const simplemdeDetails = new SimpleMDE({
-            element: document.getElementById("Details"),
-            toolbar: ["bold", "italic", "link"],
-            spellChecker: false,
-            status: false
+        const IS_ADMIN = <?= json_encode($is_admin) ?>;
+        const IS_CONTRIB = <?= json_encode($is_contrib) ?>;
+        const mdeOptions = {spellChecker:false,status:false,toolbar:["bold","italic","link"]};
+        window.addEventListener('DOMContentLoaded', function() {
+            new SimpleMDE({ element: document.getElementById('Details'), ...mdeOptions });
+            new SimpleMDE({ element: document.getElementById('Sources'), ...mdeOptions });
         });
-        const simplemdeSources = new SimpleMDE({
-            element: document.getElementById("Sources"),
-            toolbar: ["bold", "italic", "link"],
-            spellChecker: false,
-            status: false
-        });
-
-        // Gestion dynamique des ressources (Iconographie et Documents)
-        function addResourcePair(type) {
-            const container = document.getElementById(type + '-container');
-            const div = document.createElement('div');
+        let currentUploadType = '';
+        function openUploadModal(type) {
+            if(!IS_ADMIN){
+                alert("Vous n'avez pas le droit de gérer les documents. Veuillez contacter l'administrateur.");
+                return;
+            }
+            currentUploadType = type;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('descInput').value = '';
+            document.getElementById('descError').style.display = 'none';
+            document.getElementById('uploadModal').style.display = 'flex';
+            if(type === 'iconographie') {
+                document.getElementById('fileInput').accept = 'image/jpeg,image/png,image/gif,image/jpg';
+            } else {
+                document.getElementById('fileInput').accept = 'application/pdf,image/jpeg,image/png,image/gif,image/jpg,text/plain';
+            }
+        }
+        function closeUploadModal() {
+            document.getElementById('uploadModal').style.display = 'none';
+        }
+        function addResourcePair(type, desc, path) {
+            let container = document.getElementById(type + '-container');
+            let div = document.createElement('div');
             div.className = 'resource-pair';
+            let isImg = /\.(jpg|jpeg|png|gif)$/i.test(path);
+            let isPdf = /\.pdf$/i.test(path);
+            let isTxt = /\.txt$/i.test(path);
+            let media = '';
+            if (type === 'iconographie' && isImg) {
+                media = `<img src="${path}" alt="img">`;
+            } else if (type === 'documents') {
+                if (isImg) {
+                    media = `<img src="${path}" alt="img">`;
+                } else if (isPdf) {
+                    media = `<a class="doc-link" href="${path}" target="_blank">📄 PDF</a>`;
+                } else if (isTxt) {
+                    media = `<a class="doc-link" href="${path}" target="_blank">📄 TXT</a>`;
+                }
+            }
             div.innerHTML = `
-                <input type="text" name="${type}_description[]" placeholder="Description" required>
-                <input type="url" name="${type}_lien[]" placeholder="https://...">
-                <button type="button" class="btn-remove" onclick="this.parentElement.remove()">🗑️</button>
+                <input type="text" name="description_gesdoc[${path}]" value="${desc.replace(/\"/g,'&quot;')}" ${!IS_ADMIN ? 'readonly' : ''}>
+                <input type="hidden" name="${type}_lien[]" value="${path}">
+                ${media}
+                <span class="filepath">${path}</span>
+                ${IS_ADMIN ? '<button type="button" class="btn-remove" onclick="this.parentElement.remove()">🗑️</button>' : ''}
             `;
             container.appendChild(div);
         }
-
-        // Pré-remplir avec les données POST en cas d'erreur
-        document.addEventListener('DOMContentLoaded', () => {
-            const iconoDescs = <?= json_encode($_POST['iconographie_description'] ?? []) ?>;
-            const iconoLinks = <?= json_encode($_POST['iconographie_lien'] ?? []) ?>;
-            iconoDescs.forEach((desc, i) => {
-                addResourcePair('iconographie');
-                const inputs = document.querySelectorAll('#iconographie-container .resource-pair')[i];
-                inputs.querySelector('input[type="text"]').value = desc;
-                inputs.querySelector('input[type="url"]').value = iconoLinks[i] || '';
+        function uploadFile() {
+            if(!IS_ADMIN){
+                alert("Vous n'avez pas le droit de gérer les documents. Veuillez contacter l'administrateur.");
+                closeUploadModal();
+                return;
+            }
+            const file = document.getElementById('fileInput').files[0];
+            const desc = document.getElementById('descInput').value.trim();
+            if (!file) return;
+            if (!desc) {
+                document.getElementById('descError').style.display = 'block';
+                return;
+            }
+            document.getElementById('descError').style.display = 'none';
+            const formData = new FormData();
+            formData.append('fileToUpload', file);
+            formData.append('ajax', '1');
+            formData.append('description', desc);
+            fetch('upload_docs.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(res => {
+                if(res.success && res.already_exists && res.existing_file_name) {
+                    let public_url = "/fetch_doc.php?file=" + encodeURIComponent(res.existing_file_name);
+                    if (confirm(res.message + "\nCliquez sur OK pour l'utiliser.")) {
+                        addResourcePair(currentUploadType, desc, public_url);
+                    }
+                    closeUploadModal();
+                } else if (res.success && res.new_file_name) {
+                    let public_url = "/fetch_doc.php?file=" + encodeURIComponent(res.new_file_name);
+                    addResourcePair(currentUploadType, desc, public_url);
+                    closeUploadModal();
+                } else {
+                    alert(res.message || 'Erreur upload');
+                    closeUploadModal();
+                }
+            })
+            .catch(() => {
+                alert('Erreur upload');
+                closeUploadModal();
             });
-
-            const docDescs = <?= json_encode($_POST['documents_description'] ?? []) ?>;
-            const docLinks = <?= json_encode($_POST['documents_lien'] ?? []) ?>;
-            docDescs.forEach((desc, i) => {
-                addResourcePair('documents');
-                const inputs = document.querySelectorAll('#documents-container .resource-pair')[i];
-                inputs.querySelector('input[type="text"]').value = desc;
-                inputs.querySelector('input[type="url"]').value = docLinks[i] || '';
-            });
-        });
+        }
     </script>
 </body>
 </html>
