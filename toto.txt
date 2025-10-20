@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# setup-github-ssh.sh - configuration SSH GitHub (Linux)
+# Usage: ./setup-github-ssh.sh [owner/repo] [key-path]
+# Defaults: owner/repo = joel-jgweb/personnages-historiques
+#           key-path = $HOME/.ssh/id_ed25519_github
+
+set -euo pipefail
+
+REPO="${1:-joel-jgweb/personnages-historiques}"
+KEYPATH="${2:-$HOME/.ssh/id_ed25519_github}"
+PUBKEY="${KEYPATH}.pub"
+
+# Get an email for key comment
+GIT_EMAIL="$(git config user.email 2>/dev/null || true)"
+if [ -z "$GIT_EMAIL" ]; then
+  read -r -p "Entrez votre email pour la clé SSH (laissez vide pour utiliser git@$(hostname)): " INPUT_EMAIL
+  if [ -n "$INPUT_EMAIL" ]; then
+    GIT_EMAIL="$INPUT_EMAIL"
+  else
+    GIT_EMAIL="git@$(hostname)"
+  fi
+fi
+
+echo "Dépôt cible : $REPO"
+echo "Chemin clé : $KEYPATH"
+
+# Warn if not in a git repo
+if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+  echo "Attention : il semble que vous n'êtes pas dans un dépôt Git. Continuer ? (y/N)"
+  read -r yn
+  if [ "${yn,,}" != "y" ]; then
+    echo "Abandon."
+    exit 1
+  fi
+fi
+
+# Generate key if doesn't exist
+if [ -f "$KEYPATH" ] || [ -f "$PUBKEY" ]; then
+  echo "La clé existe déjà : $KEYPATH (ne sera pas écrasée)."
+else
+  echo "Génération de la clé SSH ed25519 (sans passphrase par défaut)..."
+  ssh-keygen -t ed25519 -f "$KEYPATH" -C "$GIT_EMAIL" -N ""
+  echo "Clé générée : $KEYPATH"
+fi
+
+# Start ssh-agent if not running, then add key
+if ! pgrep -u "$USER" ssh-agent >/dev/null 2>&1; then
+  eval "$(ssh-agent -s)" >/dev/null
+fi
+
+if ssh-add -l 2>/dev/null | grep -q "$(ssh-keygen -lf "$KEYPATH" 2>/dev/null | awk '{print $2}' | sed 's/.*ssh-ed25519,//' )"; then
+  echo "La clé semble déjà chargée dans ssh-agent."
+else
+  if ssh-add "$KEYPATH" 2>/dev/null; then
+    echo "Clé ajoutée à ssh-agent."
+  else
+    # try without quieting errors (in case passphrase required)
+    ssh-add "$KEYPATH" || true
+  fi
+fi
+
+# Copy public key to clipboard if possible
+if [ -f "$PUBKEY" ]; then
+  if command -v xclip >/dev/null 2>&1; then
+    xclip -selection clipboard < "$PUBKEY" && echo "Clé publique copiée dans le presse-papiers (xclip)."
+  elif command -v wl-copy >/dev/null 2>&1; then
+    wl-copy < "$PUBKEY" && echo "Clé publique copiée dans le presse-papiers (wl-copy)."
+  else
+    echo "Aucun utilitaire de presse-papiers trouvé (xclip/wl-copy). Affichage de la clé publique ci-dessous :"
+    echo "---- DEBUT CLE PUBLIQUE ----"
+    cat "$PUBKEY"
+    echo "---- FIN CLE PUBLIQUE ----"
+  fi
+else
+  echo "Clé publique introuvable : $PUBKEY"
+  exit 1
+fi
+
+# Try to upload key via gh if available and authenticated
+if command -v gh >/dev/null 2>&1; then
+  if gh auth status >/dev/null 2>&1; then
+    TITLE="linux-$(hostname)-$(date -u +%Y%m%dT%H%M%SZ)"
+    if gh ssh-key add "$PUBKEY" --title "$TITLE" >/dev/null 2>&1; then
+      echo "Clé ajoutée à GitHub via gh avec le titre: $TITLE"
+    else
+      echo "Échec de l'ajout via gh (peut-être clé déjà existante)."
+    fi
+  else
+    echo "gh est installé mais non authentifié. Lancez 'gh auth login' pour autoriser l'ajout automatique."
+  fi
+else
+  echo "gh non installé. Vous pouvez coller la clé publique manuellement sur https://github.com/settings/keys"
+fi
+
+# Offer to switch remote to SSH
+CURRENT_REMOTE="$(git remote get-url origin 2>/dev/null || true)"
+SSH_URL="git@github.com:${REPO}.git"
+echo "Remote actuel : $CURRENT_REMOTE"
+read -r -p "Voulez-vous basculer origin vers l'URL SSH ($SSH_URL) ? (y/N) " resp
+if [ "${resp,,}" = "y" ]; then
+  git remote set-url origin "$SSH_URL"
+  echo "origin basculé en SSH : $SSH_URL"
+fi
+
+# Test SSH connection
+echo "Test de connexion SSH vers GitHub (ssh -T git@github.com)..."
+ssh -T git@github.com || true
+
+echo ""
+echo "Terminé."
+echo "Si la clé n'a pas été ajoutée automatiquement, allez sur https://github.com/settings/keys et ajoutez le contenu de $PUBKEY."
