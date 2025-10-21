@@ -1,0 +1,18 @@
+[11-Oct-2025 07:57:33 Europe/Paris] PHP Warning:  Undefined variable $message in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/ajouter_fiche.php on line 156
+[11-Oct-2025 07:57:33 Europe/Paris] PHP Warning:  Undefined global variable $_SESSION in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/ajouter_fiche.php on line 206
+[11-Oct-2025 07:57:33 Europe/Paris] PHP Warning:  Trying to access array offset on value of type null in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/ajouter_fiche.php on line 206
+[11-Oct-2025 07:57:33 Europe/Paris] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/ajouter_fiche.php on line 206
+[11-Oct-2025 07:57:33 Europe/Paris] PHP Warning:  Undefined global variable $_SESSION in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/ajouter_fiche.php on line 212
+[11-Oct-2025 07:57:33 Europe/Paris] PHP Warning:  Trying to access array offset on value of type null in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/ajouter_fiche.php on line 212
+[11-Oct-2025 08:00:07 Europe/Paris] PHP Warning:  Undefined variable $message in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/ajouter_fiche.php on line 147
+[11-Oct-2025 08:00:07 Europe/Paris] PHP Warning:  Undefined global variable $_SESSION in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/ajouter_fiche.php on line 197
+[11-Oct-2025 08:00:07 Europe/Paris] PHP Warning:  Trying to access array offset on value of type null in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/ajouter_fiche.php on line 197
+[11-Oct-2025 08:00:07 Europe/Paris] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/ajouter_fiche.php on line 197
+[11-Oct-2025 08:00:07 Europe/Paris] PHP Warning:  Undefined global variable $_SESSION in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/ajouter_fiche.php on line 203
+[11-Oct-2025 08:00:07 Europe/Paris] PHP Warning:  Trying to access array offset on value of type null in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/ajouter_fiche.php on line 203
+[11-Oct-2025 08:05:16 Europe/Paris] PHP Fatal error:  Cannot redeclare urlToMarkdownLink() (previously declared in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/ajouterfichedebug.php:116) in /var/alternc/html/i/ihs/atelier/site_travail/www/config.php on line 153
+[11-Oct-2025 21:15:52 Europe/Paris] PHP Warning:  Undefined variable $fiche in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/modifier_fiche.php on line 178
+[11-Oct-2025 21:16:16 Europe/Paris] PHP Warning:  Undefined variable $fiche in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/modifier_fiche.php on line 178
+[11-Oct-2025 21:16:34 Europe/Paris] PHP Warning:  Undefined variable $fiche in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/modifier_fiche.php on line 178
+[11-Oct-2025 21:17:38 Europe/Paris] PHP Warning:  Undefined variable $fiche in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/modifier_fiche.php on line 178
+[11-Oct-2025 21:19:08 Europe/Paris] PHP Warning:  Undefined variable $fiche in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/modifier_fiche.php on line 178

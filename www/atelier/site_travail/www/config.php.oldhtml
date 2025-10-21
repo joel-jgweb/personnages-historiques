@@ -1,0 +1,47 @@
+<?php
+// config.php - Charge la configuration du site depuis la base de données
+
+function loadSiteConfig($pdo) {
+    $config = [
+        'site_title' => 'Portraits des Militants',
+        'site_subtitle' => 'Explorez les parcours de ceux qui ont marqué l\'histoire.',
+        'association_name' => 'Association d\'Histoire Sociale',
+        'association_address' => '123 Rue de l\'Histoire, 75000 Paris',
+        'logo_path' => null,
+        'primary_color' => '#2c3e50',
+        'secondary_color' => '#3498db',
+        'background_color' => '#1e5799',
+        'background_image' => null,
+    ];
+
+    try {
+        $stmt = $pdo->query("SELECT * FROM configuration WHERE id = 1");
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($row) {
+            foreach ($config as $key => $defaultValue) {
+                if (isset($row[$key]) && $row[$key] !== null && $row[$key] !== '') {
+                    $config[$key] = $row[$key];
+                }
+            }
+        }
+    } catch (Exception $e) {
+        error_log("Erreur lors du chargement de la configuration : " . $e->getMessage());
+    }
+
+    return $config;
+}
+
+function darkenColor($hex, $percent) {
+    $hex = str_replace('#', '', $hex);
+    $r = hexdec(substr($hex, 0, 2));
+    $g = hexdec(substr($hex, 2, 2));
+    $b = hexdec(substr($hex, 4, 2));
+    $r = max(0, $r - ($r * $percent / 100));
+    $g = max(0, $g - ($g * $percent / 100));
+    $b = max(0, $b - ($b * $percent / 100));
+    return '#' . str_pad(dechex((int)$r), 2, '0', STR_PAD_LEFT) .
+               str_pad(dechex((int)$g), 2, '0', STR_PAD_LEFT) .
+               str_pad(dechex((int)$b), 2, '0', STR_PAD_LEFT);
+}
+?>

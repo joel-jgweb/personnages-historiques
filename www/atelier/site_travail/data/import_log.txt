@@ -1,0 +1,6 @@
+[2025-09-24 11:56:53] joel : Sauvegarde créée avant import CSV : 20250924_115653_pre_import_portraits.sqlite
+[2025-09-24 11:56:54] joel : Mise à jour de 15 fiches depuis CSV.
+[2025-10-02 09:44:57] admin : Sauvegarde créée avant import CSV : 20251002_094457_pre_import_portraits.sqlite
+[2025-10-02 09:45:42] admin : Sauvegarde créée avant import CSV : 20251002_094542_pre_import_portraits.sqlite
+[2025-10-02 09:49:38] admin : Sauvegarde créée avant import CSV : 20251002_094938_pre_import_portraits.sqlite
+[2025-10-02 09:50:16] admin : Sauvegarde créée avant import CSV : 20251002_095016_pre_import_portraits.sqlite

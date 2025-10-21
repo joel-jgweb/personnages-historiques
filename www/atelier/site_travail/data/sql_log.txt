@@ -1,0 +1,107 @@
+[2025-09-23 18:53:53] joel : Sauvegarde créée : 20250923_185353_portraits.sqlite
+[2025-09-23 18:53:53] joel : Requête DML/DDL exécutée : ALTER TABLE personnages ADD COLUMN auteur TEXT DEFAULT NULL; (Lignes affectées: 0)
+[2025-09-23 19:00:42] joel : Sauvegarde créée : 20250923_190042_portraits.sqlite
+[2025-09-23 19:00:42] joel : Erreur lors de l'exécution : SQLSTATE[HY000]: General error: 1 near ",": syntax error
+[2025-09-23 19:01:57] joel : Sauvegarde de pré-restauration créée : 20250923_190157_pre_restore_portraits.sqlite
+[2025-09-23 19:01:57] joel : Base de données RESTAURÉE à partir de : 20250923_190042_portraits.sqlite
+[2025-09-23 19:02:45] joel : Sauvegarde créée : 20250923_190245_portraits.sqlite
+[2025-09-23 19:02:45] joel : Erreur lors de l'exécution : SQLSTATE[HY000]: General error: 1 duplicate column name: auteur
+[2025-09-23 19:03:54] joel : Sauvegarde de pré-restauration créée : 20250923_190354_pre_restore_portraits.sqlite
+[2025-09-23 19:03:54] joel : Base de données RESTAURÉE à partir de : 20250923_190042_portraits.sqlite
+[2025-09-23 19:04:23] joel : Sauvegarde créée : 20250923_190423_portraits.sqlite
+[2025-09-23 19:04:23] joel : Requête DML/DDL exécutée : ALTER TABLE personnages ADD COLUMN valideur TEXT DEFAULT NULL; (Lignes affectées: 0)
+[2025-09-23 19:05:26] joel : Sauvegarde créée : 20250923_190526_portraits.sqlite
+[2025-09-23 19:05:26] joel : Erreur lors de l'exécution : SQLSTATE[HY000]: General error: 1 Cannot add a column with non-constant default
+[2025-09-23 19:08:43] joel : Sauvegarde créée : 20250923_190843_portraits.sqlite
+[2025-09-23 19:08:43] joel : Requête DML/DDL exécutée : ALTER TABLE personnages ADD COLUMN derniere_modif DATETIME; (Lignes affectées: 0)
+[2025-09-23 19:09:45] joel : Sauvegarde créée : 20250923_190945_portraits.sqlite
+[2025-09-23 19:09:45] joel : Requête DML/DDL exécutée : UPDATE personnages SET derniere_modif = CURRENT_TIMESTAMP; (Lignes affectées: 4457)
+[2025-09-23 19:15:13] joel : Sauvegarde créée : 20250923_191513_portraits.sqlite
+[2025-09-23 19:15:13] joel : Requête DML/DDL exécutée : UPDATE personnages 
+SET auteur = 'Collectif-IHS', 
+    valideur = 'JG'; (Lignes affectées: 4457)
+[2025-09-23 20:18:38] joel : Sauvegarde créée : 20250923_201838_portraits.sqlite
+[2025-09-23 20:18:38] joel : Requête DML/DDL exécutée : DELETE FROM personnages 
+WHERE ID_fiche IN (
+    SELECT ID_fiche 
+    FROM personnages 
+    ORDER BY ID_fiche DESC 
+    LIMIT 2
+); (Lignes affectées: 2)
+[2025-09-23 20:37:46] joel : Sauvegarde supprimée : 20250923_185353_portraits.sqlite
+[2025-09-25 15:36:18] joel : Sauvegarde créée : 20250925_153618_portraits.sqlite
+[2025-09-25 15:36:18] joel : Erreur lors de l'exécution : SQLSTATE[HY000]: General error: 1 duplicate column name: auteur
+[2025-09-25 21:11:08] admin : Sauvegarde créée : 20250925_211108_portraits.sqlite
+[2025-09-25 21:11:08] admin : Requête DML/DDL exécutée : CREATE TABLE gesdoc (
+    ID_Unique INTEGER PRIMARY KEY,
+    nom_fichier TEXT NOT NULL,
+    type TEXT
+); (Lignes affectées: 0)
+[2025-09-25 21:19:15] admin : Sauvegarde créée : 20250925_211915_portraits.sqlite
+[2025-09-25 21:19:15] admin : Erreur lors de l'exécution : SQLSTATE[HY000]: General error: 1 table gesdoc already exists
+[2025-09-25 21:19:31] admin : Sauvegarde créée : 20250925_211931_portraits.sqlite
+[2025-09-25 21:19:31] admin : Requête DML/DDL exécutée : ALTER TABLE gesdoc
+ADD COLUMN md5_hash TEXT; (Lignes affectées: 0)
+[2025-09-25 21:37:29] admin : Sauvegarde créée : 20250925_213729_portraits.sqlite
+[2025-09-25 21:37:29] admin : Requête DML/DDL exécutée : -- Requête de création de la table gesdoc (à exécuter une fois si elle n'existe pas)
+CREATE TABLE IF NOT EXISTS gesdoc (
+    id_unique INTEGER PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL,
+    nom_fichier TEXT NOT NULL UNIQUE,
+    md5_hash TEXT NOT NULL UNIQUE,
+    date_upload DATETIME DEFAULT CURRENT_TIMESTAMP
+); (Lignes affectées: 0)
+[2025-09-27 20:00:07] admin : Sauvegarde créée : 20250927_200007_portraits.sqlite
+[2025-09-27 20:00:07] admin : Requête DML/DDL exécutée : ALTER TABLE utilisateurs
+ADD COLUMN prenom_nom VARCHAR(255); (Lignes affectées: 0)
+[2025-10-02 17:42:09] joel : Sauvegarde créée : 20251002_174209_portraits.sqlite
+[2025-10-02 17:42:09] joel : Requête DML/DDL exécutée : DELETE FROM personnages; (Lignes affectées: 4455)
+[2025-10-09 15:50:26] admin : Sauvegarde créée : 20251009_155026_portraits.sqlite
+[2025-10-09 15:50:26] admin : Requête DML/DDL exécutée : PRAGMA encoding; (Lignes affectées: 0)
+[2025-10-09 16:01:16] admin : Sauvegarde créée : 20251009_160116_portraits.sqlite
+[2025-10-09 16:01:16] admin : Erreur lors de l'exécution : SQLSTATE[HY000]: General error: 1 near "frama": syntax error
+[2025-10-09 16:36:58] admin : Sauvegarde de pré-restauration créée : 20251009_163658_pre_restore_portraits.sqlite
+[2025-10-09 16:36:58] admin : Base de données RESTAURÉE à partir de : 20251009_160116_portraits.sqlite
+[2025-10-09 16:50:47] admin : Sauvegarde créée : 20251009_165047_portraits.sqlite
+[2025-10-09 16:50:47] admin : Erreur lors de l'exécution : SQLSTATE[HY000]: General error: 1 near "SHOW": syntax error
+[2025-10-11 20:44:18] joel : Sauvegarde créée : 20251011_204418_portraits.sqlite
+[2025-10-11 20:44:18] joel : Requête DML/DDL exécutée : ALTER TABLE gesdoc
+ADD COLUMN description VARCHAR(50); (Lignes affectées: 0)
+[2025-10-21 10:06:05] joel : Sauvegarde créée : 20251021_100605_portraits.sqlite
+[2025-10-21 10:06:05] joel : Erreur lors de l'exécution : SQLSTATE[HY000]: General error: 1 no such column: nom_du_champ
+[2025-10-21 10:06:19] joel : Sauvegarde créée : 20251021_100619_portraits.sqlite
+[2025-10-21 10:06:19] joel : Erreur lors de l'exécution : SQLSTATE[HY000]: General error: 1 no such column: nom_du_champ
+[2025-10-21 10:06:47] joel : Sauvegarde créée : 20251021_100647_portraits.sqlite
+[2025-10-21 10:06:47] joel : Erreur lors de l'exécution : SQLSTATE[HY000]: General error: 1 no such column: nom_du_champ
+[2025-10-21 10:07:05] joel : Sauvegarde de pré-restauration créée : 20251021_100705_pre_restore_portraits.sqlite
+[2025-10-21 10:07:05] joel : Base de données RESTAURÉE à partir de : 20251021_100605_portraits.sqlite
+[2025-10-21 10:09:21] joel : Sauvegarde créée : 20251021_100921_portraits.sqlite
+[2025-10-21 10:09:21] joel : Erreur lors de l'exécution : SQLSTATE[HY000]: General error: 1 no such column: condition_optionnelle
+[2025-10-21 10:11:54] joel : Sauvegarde de pré-restauration créée : 20251021_101154_pre_restore_portraits.sqlite
+[2025-10-21 10:11:54] joel : Base de données RESTAURÉE à partir de : 20251021_100605_portraits.sqlite
+[2025-10-21 10:16:02] joel : Sauvegarde de pré-restauration créée : 20251021_101602_pre_restore_portraits.sqlite
+[2025-10-21 10:16:02] joel : Base de données RESTAURÉE à partir de : 20251021_100605_portraits.sqlite
+[2025-10-21 10:16:14] joel : Sauvegarde créée : 20251021_101614_portraits.sqlite
+[2025-10-21 10:16:14] joel : Requête DML/DDL exécutée : UPDATE personnages
+SET auteur = REPLACE(auteur, '-IHS', ' IHS_CGTfapt')
+WHERE auteur LIKE '%-IHS%'; (Lignes affectées: 4452)
+[2025-10-21 10:18:43] joel : Sauvegarde créée : 20251021_101843_portraits.sqlite
+[2025-10-21 10:18:43] joel : Requête DML/DDL exécutée : UPDATE personnages
+SET auteur = REPLACE(auteur, 'Collectif-IHS', 'Collectif IHS-CGT-fapt')
+WHERE auteur LIKE '%-IHS%'; (Lignes affectées: 0)
+[2025-10-21 10:19:48] joel : Sauvegarde créée : 20251021_101948_portraits.sqlite
+[2025-10-21 10:19:48] joel : Requête DML/DDL exécutée : UPDATE personnages
+SET auteur = REPLACE(auteur, '_', ' ')
+WHERE auteur LIKE '%-IHS%'; (Lignes affectées: 0)
+[2025-10-21 10:21:13] joel : Sauvegarde créée : 20251021_102113_portraits.sqlite
+[2025-10-21 10:21:13] joel : Requête DML/DDL exécutée : UPDATE personnages
+SET auteur = REPLACE(auteur, 'Collectif IHS_CGTfapt', 'Collectif IHS-CGT-fapt')
+WHERE auteur LIKE '%-IHS%'; (Lignes affectées: 0)
+[2025-10-21 10:21:51] joel : Sauvegarde créée : 20251021_102151_portraits.sqlite
+[2025-10-21 10:21:51] joel : Requête DML/DDL exécutée : UPDATE personnages
+SET auteur = REPLACE(auteur, 'IHS_CGTfapt', 'IHS-CGT-fapt')
+WHERE auteur LIKE '%-IHS%'; (Lignes affectées: 0)
+[2025-10-21 10:26:02] joel : Sauvegarde créée : 20251021_102602_portraits.sqlite
+[2025-10-21 10:26:02] joel : Requête DML/DDL exécutée : UPDATE personnages
+SET auteur = REPLACE(auteur, 'IHS_CGTfapt', 'IHS-CGT-fapt')
+WHERE auteur LIKE '%IHS_CGTfapt%'; (Lignes affectées: 4452)
