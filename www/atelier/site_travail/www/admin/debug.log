@@ -1,9 +1,0 @@
-[01-Oct-2025 08:28:17 Europe/Paris] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY000]: General error: 1 no such column: ID_personnage in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/supprimer_fiche.php:54
-Stack trace:
-#0 /var/alternc/html/i/ihs/atelier/site_travail/www/admin/supprimer_fiche.php(54): PDO->prepare()
-#1 {main}
-  thrown in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/supprimer_fiche.php on line 54
-[01-Oct-2025 08:32:58 Europe/Paris] PHP Warning:  Undefined array key "Engagements" in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/supprimer_fiche.php on line 126
-[01-Oct-2025 08:32:58 Europe/Paris] PHP Deprecated:  htmlspecialchars(): Passing null to parameter #1 ($string) of type string is deprecated in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/supprimer_fiche.php on line 126
-[01-Oct-2025 08:32:58 Europe/Paris] PHP Warning:  Undefined array key "Details" in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/supprimer_fiche.php on line 127
-[01-Oct-2025 08:32:58 Europe/Paris] PHP Deprecated:  strip_tags(): Passing null to parameter #1 ($string) of type string is deprecated in /var/alternc/html/i/ihs/atelier/site_travail/www/admin/supprimer_fiche.php on line 127
