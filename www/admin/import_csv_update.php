@@ -12,6 +12,10 @@ $csvFile = __DIR__ . '/update_data.csv';
 $message = '';
 $fichesModifiees = [];
 
+// Définition des champs qui seront mis à jour
+// ASSUMÉ : Ces 7 colonnes correspondent aux colonnes 1 à 7 du CSV
+$champsAUpdate = ['Nom', 'Metier', 'Engagements', 'Details', 'Sources', 'Donnees_genealogiques', 'Iconographie'];
+
 try {
     $pdo = new PDO("sqlite:$dbPath");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -27,7 +31,7 @@ function logAction($msg) {
 }
 
 // Lire le CSV et comparer avec la base
-function chargerFichesModifiees($pdo, $csvFile) {
+function chargerFichesModifiees($pdo, $csvFile, $champsAUpdate) {
     if (!file_exists($csvFile)) {
         throw new Exception("Fichier CSV 'update_data.csv' non trouvé dans le dossier admin.");
     }
@@ -36,22 +40,26 @@ function chargerFichesModifiees($pdo, $csvFile) {
     if (($handle = fopen($csvFile, 'r')) !== FALSE) {
         // Lire l'en-tête
         $header = fgetcsv($handle, 0, ';');
+        // L'en-tête doit contenir 8 colonnes : ID_fiche (0) + les 7 champs à mettre à jour
         if (!$header || count($header) < 8) {
-            throw new Exception("Format CSV invalide. L'en-tête doit contenir 8 colonnes.");
+            throw new Exception("Format CSV invalide. L'en-tête doit contenir au moins 8 colonnes (ID_fiche, plus les 7 champs de mise à jour).");
         }
 
         while (($data = fgetcsv($handle, 0, ';')) !== FALSE) {
             if (count($data) < 8) continue;
-            $fichesCsv[] = [
-                'ID_fiche' => $data[0],
-                'Nom' => $data[1],
-                'Metier' => $data[2],
-                'Engagements' => $data[3],
-                'Details' => $data[4],
-                'Sources' => $data[5],
+            
+            // On mappe les données aux noms de colonnes exacts de la table 'personnages'
+            $ficheData = [
+                'ID_fiche'              => $data[0],
+                'Nom'                   => $data[1],
+                'Parcours_professionnel'=> $data[2], // Anciennement 'Metier'
+                'Parcours_syndical'     => $data[3], // Anciennement 'Engagements'
+                'Details'               => $data[4],
+                'Sources'               => $data[5],
                 'Donnees_genealogiques' => $data[6],
-                'Iconographie' => $data[7]
+                'Iconographie'          => $data[7]
             ];
+            $fichesCsv[] = $ficheData;
         }
         fclose($handle);
     }
@@ -62,7 +70,9 @@ function chargerFichesModifiees($pdo, $csvFile) {
         if (!is_numeric($id)) continue;
 
         // Récupérer la fiche actuelle en base
-        $stmt = $pdo->prepare("SELECT * FROM personnages WHERE ID_fiche = ?");
+        // On sélectionne uniquement les champs qui nous intéressent pour optimiser
+        $fieldsForSelect = 'ID_fiche, ' . implode(', ', $champsAUpdate);
+        $stmt = $pdo->prepare("SELECT $fieldsForSelect FROM personnages WHERE ID_fiche = ?");
         $stmt->execute([$id]);
         $ficheDb = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -72,9 +82,9 @@ function chargerFichesModifiees($pdo, $csvFile) {
         }
 
         // Comparer les champs pertinents
-        $champs = ['Nom', 'Metier', 'Engagements', 'Details', 'Sources', 'Donnees_genealogiques', 'Iconographie'];
         $estModifiee = false;
-        foreach ($champs as $champ) {
+        foreach ($champsAUpdate as $champ) {
+            // Comparaison simple, en s'assurant que les clés existent
             if (($ficheCsv[$champ] ?? '') !== ($ficheDb[$champ] ?? '')) {
                 $estModifiee = true;
                 break;
@@ -92,7 +102,7 @@ function chargerFichesModifiees($pdo, $csvFile) {
 // Action : Afficher la liste des fiches modifiées
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
-        $fichesModifiees = chargerFichesModifiees($pdo, $csvFile);
+        $fichesModifiees = chargerFichesModifiees($pdo, $csvFile, $champsAUpdate);
     } catch (Exception $e) {
         $message = "<div class='alert alert-danger'>❌ " . htmlspecialchars($e->getMessage()) . "</div>";
     }
@@ -112,33 +122,55 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         $idsToUpdate = $_POST['fiches_a_mettre_a_jour'] ?? [];
         $count = 0;
 
+        // Préparer la requête UPDATE en utilisant uniquement les champsAUpdate
+        $setClauses = [];
+        $paramMarkers = [];
+        foreach ($champsAUpdate as $champ) {
+            $setClauses[] = "$champ = ?";
+            $paramMarkers[] = $champ;
+        }
+        $setClause = implode(', ', $setClauses);
+        
+        $sql = "
+            UPDATE personnages SET
+                $setClause,
+                derniere_modif = ?
+            WHERE ID_fiche = ?
+        ";
+        $stmtUpdate = $pdo->prepare($sql);
+
         foreach ($idsToUpdate as $id) {
             if (!is_numeric($id)) continue;
 
-            // Recharger les données depuis le CSV (sécurité)
-            $fichesCsv = [];
+            // Recharger les données depuis le CSV (sécurité et fraîcheur)
             if (($handle = fopen($csvFile, 'r')) !== FALSE) {
                 fgetcsv($handle, 0, ';'); // Skip header
                 while (($data = fgetcsv($handle, 0, ';')) !== FALSE) {
                     if (count($data) >= 8 && $data[0] == $id) {
-                        $stmt = $pdo->prepare("
-                            UPDATE personnages SET
-                                Nom = ?,
-                                Metier = ?,
-                                Engagements = ?,
-                                Details = ?,
-                                Sources = ?,
-                                Donnees_genealogiques = ?,
-                                Iconographie = ?,
-                                derniere_modif = ?
-                            WHERE ID_fiche = ?
-                        ");
-                        $stmt->execute([
-                            $data[1], $data[2], $data[3], $data[4],
-                            $data[5], $data[6], $data[7],
-                            date('Y-m-d H:i:s'),
-                            $id
-                        ]);
+                        
+                        // Mappage des données du CSV
+                        $dataMap = [
+                            'ID_fiche'              => $data[0],
+                            'Nom'                   => $data[1],
+                            'Parcours_professionnel'=> $data[2],
+                            'Parcours_syndical'     => $data[3],
+                            'Details'               => $data[4],
+                            'Sources'               => $data[5],
+                            'Donnees_genealogiques' => $data[6],
+                            'Iconographie'          => $data[7]
+                        ];
+                        
+                        // Créer le tableau de paramètres pour l'exécution
+                        $params = [];
+                        foreach ($paramMarkers as $marker) {
+                            $params[] = $dataMap[$marker];
+                        }
+                        
+                        // Ajouter le timestamp et l'ID_fiche pour les deux derniers marqueurs '?'
+                        $params[] = date('Y-m-d H:i:s');
+                        $params[] = $id;
+
+                        $stmtUpdate->execute($params);
                         $count++;
                         break;
                     }
@@ -228,8 +260,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                         </div>
 
                         <?php
-                        $champs = ['Nom', 'Metier', 'Engagements', 'Details', 'Sources', 'Donnees_genealogiques', 'Iconographie'];
-                        foreach ($champs as $champ) {
+                        // Les champs à afficher pour la différence sont maintenant pris de $champsAUpdate
+                        foreach ($champsAUpdate as $champ) {
+                            // On utilise les noms de colonnes corrects pour l'affichage
                             $csvVal = $fiche[$champ] ?? '';
                             $dbVal = $fiche['actuel'][$champ] ?? '';
                             if ($csvVal !== $dbVal) {

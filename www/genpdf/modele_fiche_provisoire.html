@@ -1,0 +1,99 @@
+<style>
+/* ⚠️ Styles Minimalistes en LIGNE (Inline) */
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    padding: 0;
+    -webkit-font-smoothing: antialiased; /* Tentative de lissage */
+    -moz-osx-font-smoothing: grayscale; 
+}
+.fiche-container-provisoire {
+    border: 1px solid #ccc;
+    padding: 20px;
+}
+.bandeau-provisoire {
+    display: flex; 
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #333;
+    padding-bottom: 15px;
+}
+.bandeau-texte-provisoire {
+    width: 70%;
+}
+.nom-fiche-provisoire {
+    font-size: 28pt;
+    font-weight: bold;
+    color: #0056b3; 
+    margin-bottom: 5px; /* Réduit pour rapprocher la ligne biographique */
+}
+/* Style pour une ligne linéaire et compacte */
+.bio-data-provisoire {
+    font-size: 11pt;
+    color: #555;
+    line-height: 1.5;
+    font-weight: 600; 
+}
+.details-zone-provisoire {
+    font-size: 12pt;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+.sources-zone-provisoire {
+    font-size: 10pt; /* Taille réduite pour les sources */
+}
+.sources-zone-provisoire h3 {
+    border-bottom: 1px solid #999;
+    padding-bottom: 5px;
+    margin-top: 30px;
+    font-size: 16pt;
+    color: #333;
+}
+.edition-mentions-provisoire {
+    text-align: right;
+    font-size: 9pt;
+    color: #888;
+    margin-top: 20px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+.multipage-alert {
+    color: red;
+    font-style: italic;
+    text-align: right;
+    margin-top: 20px;
+}
+</style>
+
+<div class="fiche-container-provisoire">
+    
+    <div class="bandeau-provisoire">
+        <div class="bandeau-texte-provisoire">
+            <div class="nom-fiche-provisoire">[NOM]</div>
+            
+            <div class="bio-data-provisoire">
+                [ligne_biographique]
+            </div>
+            
+        </div>
+        <div style="width: 25%; height: 150px; border: 1px solid #ddd; overflow: hidden;">
+            [photo_placeholder] 
+        </div>
+    </div>
+
+    <div class="details-zone-provisoire">
+        <h2>Détails Biographiques</h2>
+        [details]
+    </div>
+
+    <div class="sources-zone-provisoire">
+        <h3>Sources</h3>
+        [Sources]
+    </div>
+    
+    [edition_mentions]
+
+    [multipage_message]
+
+</div>
