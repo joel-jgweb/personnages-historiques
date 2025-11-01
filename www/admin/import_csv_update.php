@@ -192,6 +192,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <link rel="stylesheet" href="admin.css">
     <meta charset="UTF-8">
     <title>🔄 Mise à jour depuis CSV</title>
     <style>

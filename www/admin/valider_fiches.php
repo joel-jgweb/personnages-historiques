@@ -67,6 +67,7 @@ try {
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <link rel="stylesheet" href="admin.css">
     <meta charset="UTF-8">
     <title>✅ Valider et Publier les Fiches</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

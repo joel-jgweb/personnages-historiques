@@ -142,6 +142,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <link rel="stylesheet" href="admin.css">
     <meta charset="UTF-8">
     <title>Configurer le Site</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

@@ -20,7 +20,8 @@ function checkUserPermission($allowedStatuts, $redirectUrl = 'index.php') {
         error_log("Accès refusé : Utilisateur ID " . $_SESSION['user_id'] . " (Statut: $userStatut) a tenté d'accéder à " . $_SERVER['REQUEST_URI']);
 
         // Afficher un message d'erreur et rediriger
-        echo "<!DOCTYPE html><html><head><title>Accès refusé</title></head><body>";
+        echo "<!DOCTYPE html><html><head>
+    <link rel="stylesheet" href="admin.css"><title>Accès refusé</title></head><body>";
         echo "<div style='padding: 50px; text-align: center; font-family: Arial, sans-serif;'>";
         echo "<h2 style='color: #dc3545;'>⛔ Accès refusé</h2>";
         echo "<p>Vous n'avez pas les permissions nécessaires pour accéder à cette page.</p>";
