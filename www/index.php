@@ -25,32 +25,33 @@ try {
             box-sizing: border-box;
         }
 
-       body {
-    position: relative; /* Indispensable pour que le pseudo-élément se positionne correctement */
-    font-family: 'Georgia', serif;
-    color: #fff;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-}
-
-body::before {
-    content: ''; /* Obligatoire pour les pseudo-éléments */
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: <?php
-        if (!empty($config['background_image'])) {
-            echo "url('" . htmlspecialchars($config['background_image']) . "') no-repeat center center fixed, ";
+        body {
+            position: relative;
+            font-family: 'Georgia', serif;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
-        echo htmlspecialchars($config['background_color']);
-    ?>;
-    background-size: cover;
-    opacity: 0.45; /* 45% d'opacité */
-    z-index: -1; /* Place le calque en arrière-plan */
-}
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: <?php
+                if (!empty($config['background_image'])) {
+                    echo "url('" . htmlspecialchars($config['background_image']) . "') no-repeat center center fixed, ";
+                }
+                echo htmlspecialchars($config['background_color']);
+            ?>;
+            background-size: cover;
+            opacity: 0.45;
+            z-index: -1;
+        }
+
         .hero {
             text-align: center;
             padding: 6rem 2rem;
@@ -59,13 +60,13 @@ body::before {
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            color: <?= htmlspecialchars($config['secondary_color']) ?>; /* <-- Ajout de cette ligne */
+            color: <?= htmlspecialchars($config['secondary_color']) ?>;
         }
 
         .logo-placeholder {
             max-height: 250px;
             margin-bottom: 2rem;
-            border-radius: 00px;
+            border-radius: 0;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
@@ -80,7 +81,7 @@ body::before {
         .hero p {
             font-size: 1.3rem;
             max-width: 700px;
-            margin: 0 auto 3rem;
+            margin: 0 auto 2.5rem;
             line-height: 1.6;
             opacity: 0.95;
         }
@@ -89,6 +90,7 @@ body::before {
             width: 100%;
             max-width: 700px;
             position: relative;
+            margin-bottom: 2rem;
         }
 
         #search-bar {
@@ -109,83 +111,71 @@ body::before {
             right: 20px;
             top: 50%;
             transform: translateY(-50%);
-            font-size: 1.5rem;
-            color: #555;
-        }
-
-        .advanced-toggle {
-            margin-top: 1.5rem;
+            font-size: 1.6rem;
+            color: #666;
+            background: none;
+            border: none;
             cursor: pointer;
-            font-size: 1rem;
-            text-decoration: underline;
-            opacity: 0.8;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background 0.2s;
         }
 
-        .advanced-filters {
+        .search-icon:hover {
+            background: rgba(0,0,0,0.05);
+            color: #333;
+        }
+
+        /* === Popup modal === */
+        #mode-popup {
             display: none;
-            margin-top: 2rem;
-            padding: 2rem;
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 15px;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
-            max-width: 700px;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
         }
 
-        .filter-row {
-            display: flex;
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        .filter-group {
-            flex: 1;
-            min-width: 200px;
+        .popup-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 450px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             text-align: left;
         }
 
-        label {
+        .popup-content h3 {
+            margin-bottom: 1.2rem;
+            color: <?= htmlspecialchars($config['primary_color']) ?>;
+            font-size: 1.4rem;
+        }
+
+        .popup-option {
             display: block;
-            margin-bottom: 0.7rem;
-            font-weight: bold;
-            font-size: 0.95rem;
-            opacity: 0.9;
-            color: #fff;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.3);
-            background: rgba(255,255,255,0.2);
-            color: white;
-            font-size: 1rem;
-        }
-
-        input::placeholder, select {
-            color: rgba(255,255,255,0.7);
-        }
-
-        .btn-search {
-            padding: 15px 40px;
-            font-size: 1.2rem;
-            background: <?= htmlspecialchars($config['secondary_color']) ?>;
-            color: white;
-            border: none;
-            border-radius: 50px;
+            padding: 14px;
+            margin-bottom: 12px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: bold;
-            margin-top: 1rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-size: 1.05rem;
+            color: #222;
+            transition: all 0.2s;
         }
 
-        .btn-search:hover {
-            background: <?= darkenColor($config['secondary_color'], 10) ?>;
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        .popup-option:hover {
+            background: #e9f7fe;
+            border-color: <?= htmlspecialchars($config['secondary_color']) ?>;
+        }
+
+        .popup-option input {
+            margin-right: 10px;
         }
 
         footer {
@@ -193,13 +183,12 @@ body::before {
             padding: 1.5rem;
             background: rgba(0,0,0,0.2);
             font-size: 0.9rem;
-            color: #ffffff; /* <-- Remplacez 'opacity' par 'color' */
+            color: #ffffff;
         }
 
         @media (max-width: 768px) {
             .hero h1 { font-size: 2.5rem; }
             .hero p { font-size: 1.1rem; }
-            .filter-row { flex-direction: column; gap: 1rem; }
         }
     </style>
 </head>
@@ -212,43 +201,26 @@ body::before {
         <h1><?= htmlspecialchars($config['site_title']) ?></h1>
         <p><?= htmlspecialchars($config['site_subtitle']) ?></p>
 
-       <div class="search-container">
-    <input type="text" id="search-bar" placeholder="Rechercher un nom, un métier, un engagement..." autocomplete="off">
-    <button class="search-icon" onclick="performSearch()" aria-label="Lancer la recherche">🔍</button>
-       </div>
-
-        <div class="advanced-toggle" onclick="toggleAdvancedFilters()">
-            Options de recherche avancée
+        <div class="search-container">
+            <input type="text" id="search-bar" placeholder="Saisissez un nom ou un mot-clé..." autocomplete="off">
+            <button class="search-icon" onclick="showModePopup()" aria-label="Lancer la recherche">🔍</button>
         </div>
+    </div>
 
-        <div class="advanced-filters" id="advanced-filters">
-            <div class="filter-row">
-                <div class="filter-group">
-                    <label for="filter-metier">Métier</label>
-                    <input type="text" id="filter-metier" placeholder="Ex: Facteur, Télégraphiste">
-                </div>
-                <div class="filter-group">
-                    <label for="filter-engagement">Engagement</label>
-                    <input type="text" id="filter-engagement" placeholder="Ex: CGT, Syndicat des PTT">
-                </div>
-            </div>
-            <div class="filter-row">
-                <div class="filter-group">
-                    <label for="filter-lieu">Lieu</label>
-                    <input type="text" id="filter-lieu" placeholder="Ville ou département">
-                </div>
-                <div class="filter-group">
-                    <label for="filter-periode">Période</label>
-                    <select id="filter-periode">
-                        <option value="">Toutes les périodes</option>
-                        <option value="1890-1910">1890 - 1910</option>
-                        <option value="1910-1930">1910 - 1930</option>
-                        <option value="1930-1950">1930 - 1950</option>
-                    </select>
-                </div>
-            </div>
-            <button class="btn-search" onclick="performSearch()">
-                Lancer la recherche
+    <!-- Popup modal -->
+    <div id="mode-popup" onclick="closePopup(event)">
+        <div class="popup-content" onclick="event.stopPropagation()">
+            <h3>Comment souhaitez-vous rechercher ?</h3>
+            <label class="popup-option">
+                <input type="radio" name="search-mode" value="all" checked>
+                Recherche sur toute la fiche
+            </label>
+            <label class="popup-option">
+                <input type="radio" name="search-mode" value="name">
+                Recherche uniquement sur le Nom
+            </label>
+            <button class="popup-option" style="background: <?= htmlspecialchars($config['secondary_color']) ?>; color: white; border-color: <?= htmlspecialchars($config['secondary_color']) ?>; margin-top: 1rem;" onclick="confirmSearch()">
+                Valider et lancer la recherche
             </button>
         </div>
     </div>
@@ -261,32 +233,33 @@ body::before {
     </footer>
 
     <script>
-        function toggleAdvancedFilters() {
-            const filters = document.getElementById('advanced-filters');
-            filters.style.display = filters.style.display === 'block' ? 'none' : 'block';
+        let currentQuery = '';
+
+        function showModePopup() {
+            const query = document.getElementById('search-bar').value.trim();
+            if (!query) {
+                alert("Veuillez saisir un terme de recherche.");
+                document.getElementById('search-bar').focus();
+                return;
+            }
+            currentQuery = query;
+            document.getElementById('mode-popup').style.display = 'flex';
         }
 
-        function performSearch() {
-            const query = document.getElementById('search-bar').value.trim();
-            const metier = document.getElementById('filter-metier').value.trim();
-            const engagement = document.getElementById('filter-engagement').value.trim();
-            const lieu = document.getElementById('filter-lieu').value.trim();
-            const periode = document.getElementById('filter-periode').value;
+        function closePopup(event) {
+            if (event.target.id === 'mode-popup') {
+                document.getElementById('mode-popup').style.display = 'none';
+            }
+        }
 
-            let url = 'search.php?';
-            const params = [];
-            if (query) params.push('q=' + encodeURIComponent(query));
-            if (metier) params.push('metier=' + encodeURIComponent(metier));
-            if (engagement) params.push('engagement=' + encodeURIComponent(engagement));
-            if (lieu) params.push('lieu=' + encodeURIComponent(lieu));
-            if (periode) params.push('periode=' + encodeURIComponent(periode));
-
-            window.location.href = url + params.join('&');
+        function confirmSearch() {
+            const mode = document.querySelector('input[name="search-mode"]:checked').value;
+            window.location.href = `search.php?q=${encodeURIComponent(currentQuery)}&mode=${encodeURIComponent(mode)}`;
         }
 
         document.getElementById('search-bar').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
-                performSearch();
+                showModePopup();
             }
         });
     </script>

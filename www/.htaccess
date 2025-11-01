@@ -1,0 +1,4 @@
+AuthUserFile "/var/alternc/html/i/ihs/atelier/site_travail/www/.htpasswd"
+AuthName "Zone protégée"
+AuthType Basic
+require valid-user

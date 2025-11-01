@@ -1,154 +1,218 @@
 <?php
-/**
- * upload_docs.php
- * Gère l'upload sécurisé de documents/images pour les sections Iconographie et Documents.
- * Stocke les fichiers dans data/docs/ et les référence dans la table gesdoc.
- */
-
-// 🔒 Désactiver l'affichage des erreurs en production
-// Décommente uniquement temporairement en développement :
-// ini_set('display_errors', 1);
-// error_reporting(E_ALL);
-
+// upload_docs.php - Upload sécurisé avec dédoublonnage MD5 et description
 session_start();
-
-// 🔐 Vérification : utilisateur connecté ?
 if (!isset($_SESSION['user_id'])) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Non authentifié.']);
+    header("Location: login.php");
     exit;
 }
+require_once 'permissions.php';
+checkUserPermission([1]); // Seul le Super-Admin (1) peut uploader
 
-// 🔐 Vérification : rôle autorisé ?
-$allowed_roles = [1, 2, 3, 6]; // Super-Admin, Admin Fiches, Rédacteur Fiches, Admin Simple
-if (!in_array($_SESSION['user_statut'] ?? null, $allowed_roles)) {
-    http_response_code(403);
-    echo json_encode(['success' => false, 'message' => 'Permissions insuffisantes pour uploader des fichiers.']);
-    exit;
+// Chemins
+define('UPLOAD_DIR', '../../data/docs/');
+define('DB_PATH', '../../data/portraits.sqlite');
+
+/**
+ * Détermine le type de fichier et retourne le préfixe pour le nommage en BDD.
+ */
+function get_file_type_and_prefix($extension) {
+    $images = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    $documents = ['pdf', 'txt'];
+    $zips = ['zip'];
+    $extension = strtolower($extension);
+    if (in_array($extension, $images)) return ['image', 'IMG'];
+    if (in_array($extension, $documents)) return ['document', 'DOC'];
+    if (in_array($extension, $zips)) return ['zip', 'ZIP'];
+    return ['autre', 'OTH'];
 }
 
-// 📁 Chemin vers le dossier de stockage (cohérent avec la structure du projet)
-$docs_dir = __DIR__ . '/../../data/docs/';
-if (!is_dir($docs_dir)) {
-    if (!mkdir($docs_dir, 0755, true)) {
-        http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Impossible de créer le dossier de stockage.']);
-        exit;
+$message = '';
+$allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'zip'];
+$max_file_size = 5 * 1024 * 1024; // 5 Mo
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["submit"])) {
+    $file_input = $_FILES["fileToUpload"] ?? null;
+    $description = trim($_POST["description"] ?? '');
+
+    // Validation description
+    if (strlen($description) > 50) {
+        $message = "❌ La description ne doit pas dépasser 50 caractères.";
+    } elseif ($file_input['error'] !== UPLOAD_ERR_OK) {
+        $message = "❌ Erreur lors de l'upload du fichier. Code: " . $file_input['error'];
+    } else {
+        $file_name = basename($file_input["name"]);
+        $file_size = $file_input["size"];
+        $file_tmp = $file_input["tmp_name"];
+        $file_ext = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
+
+        if ($file_size > $max_file_size) {
+            $message = "❌ Le fichier est trop volumineux (max 5 Mo).";
+        } elseif (!in_array($file_ext, $allowed_extensions)) {
+            $message = "❌ Format non autorisé. Seuls JPG, PNG, GIF, WEBP, PDF, TXT et ZIP sont acceptés.";
+        } else {
+            try {
+                $md5_hash = md5_file($file_tmp);
+                $pdo = new PDO('sqlite:' . DB_PATH);
+                $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+                // Vérifier si le fichier existe déjà
+                $stmt = $pdo->prepare("SELECT nom_fichier FROM gesdoc WHERE md5_hash = :md5");
+                $stmt->execute([':md5' => $md5_hash]);
+                if ($existing = $stmt->fetchColumn()) {
+                    $message = "⚠️ Ce fichier existe déjà sous le nom : <strong>" . htmlspecialchars($existing) . "</strong>.";
+                } else {
+                    list($file_type, $file_prefix) = get_file_type_and_prefix($file_ext);
+                    $new_file_name = $file_prefix . '_' . date('ymdHis') . '.' . $file_ext;
+                    $target_path = UPLOAD_DIR . $new_file_name;
+
+                    if (move_uploaded_file($file_tmp, $target_path)) {
+                        // Insérer avec description
+                        $stmt = $pdo->prepare(
+                            "INSERT INTO gesdoc (type, nom_fichier, md5_hash, description) VALUES (:type, :nom, :md5, :desc)"
+                        );
+                        $stmt->execute([
+                            ':type' => $file_type,
+                            ':nom' => $new_file_name,
+                            ':md5' => $md5_hash,
+                            ':desc' => $description
+                        ]);
+                        $message = "
+                            ✅ Fichier uploadé avec succès !<br>
+                            <strong>Nom :</strong> " . htmlspecialchars($new_file_name) . "<br>
+                            <strong>MD5 :</strong> " . htmlspecialchars($md5_hash) . "<br>
+                            <strong>Description :</strong> " . htmlspecialchars($description ?: '—') . "
+                        ";
+                    } else {
+                        $message = "❌ Impossible d’enregistrer le fichier. Vérifiez les permissions du dossier <code>" . UPLOAD_DIR . "</code>.";
+                    }
+                }
+            } catch (Exception $e) {
+                $message = "❌ Erreur : " . htmlspecialchars($e->getMessage());
+            }
+        }
     }
 }
+?>
 
-// 🗃️ Connexion à la base SQLite
-$dbPath = __DIR__ . '/../../data/portraits.sqlite';
-if (!file_exists($dbPath)) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Base de données introuvable.']);
-    exit;
-}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>📤 Upload de Documents</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .container {
+            max-width: 700px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+        input[type="file"],
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        input[type="text"] {
+            font-size: 14px;
+        }
+        .char-count {
+            font-size: 12px;
+            color: #6c757d;
+            text-align: right;
+            margin-top: 4px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .message {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .info {
+            background-color: #e7f3ff;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>📤 Upload de Documents (Admin)</h2>
 
-try {
-    $pdo = new PDO("sqlite:$dbPath");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'message' => 'Erreur de connexion à la base de données.']);
-    exit;
-}
+        <?php if ($message): ?>
+            <div class="message <?= strpos($message, '✅') !== false ? 'success' : (strpos($message, '⚠️') !== false ? 'warning' : 'error') ?>">
+                <?= $message ?>
+            </div>
+        <?php endif; ?>
 
-// 📥 Vérification de la requête AJAX
-if (empty($_POST['ajax']) || empty($_FILES['fileToUpload'])) {
-    http_response_code(400);
-    echo json_encode(['success' => false, 'message' => 'Requête invalide.']);
-    exit;
-}
+        <form action="upload_docs.php" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="fileToUpload">📁 Fichier à uploader</label>
+                <input type="file" name="fileToUpload" id="fileToUpload" required>
+            </div>
 
-// 📝 Description obligatoire
-$description = trim($_POST['description'] ?? '');
-if (!$description) {
-    echo json_encode(['success' => false, 'message' => 'La description est obligatoire.']);
-    exit;
-}
+            <div class="form-group">
+                <label for="description">📝 Description (max. 50 caractères)</label>
+                <input type="text" name="description" id="description" maxlength="50" placeholder="Ex: Photo de Jean Dupont, 1945">
+                <div class="char-count"><span id="charCount">0</span> / 50</div>
+            </div>
 
-$file = $_FILES['fileToUpload'];
-if ($file['error'] !== UPLOAD_ERR_OK) {
-    $errors = [
-        UPLOAD_ERR_INI_SIZE   => 'Fichier trop volumineux (dépasse upload_max_filesize).',
-        UPLOAD_ERR_FORM_SIZE  => 'Fichier trop volumineux (dépasse MAX_FILE_SIZE).',
-        UPLOAD_ERR_PARTIAL    => 'Téléchargement partiel.',
-        UPLOAD_ERR_NO_FILE    => 'Aucun fichier sélectionné.',
-        UPLOAD_ERR_NO_TMP_DIR => 'Dossier temporaire manquant.',
-        UPLOAD_ERR_CANT_WRITE => 'Échec d’écriture sur disque.',
-        UPLOAD_ERR_EXTENSION  => 'Extension bloquée.',
-    ];
-    $msg = $errors[$file['error']] ?? 'Erreur inconnue lors de l’upload.';
-    echo json_encode(['success' => false, 'message' => $msg]);
-    exit;
-}
+            <button type="submit" name="submit">📤 Uploader le fichier</button>
+        </form>
 
-// 🔍 Validation du type MIME (sécurité essentielle)
-$finfo = finfo_open(FILEINFO_MIME_TYPE);
-$mimeType = finfo_file($finfo, $file['tmp_name']);
-finfo_close();
+        <div class="info">
+            <strong>Formats acceptés :</strong> JPG, PNG, GIF, WEBP, PDF, TXT, ZIP (max 5 Mo)<br>
+            Les fichiers identiques (même MD5) ne sont pas dupliqués.
+        </div>
+    </div>
 
-$allowedMimeTypes = [
-    // Images
-    'image/jpeg',
-    'image/png',
-    'image/gif',
-    'image/webp',
-    // Documents
-    'application/pdf',
-    'text/plain',
-    'application/msword', // .doc
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-];
-
-if (!in_array($mimeType, $allowedMimeTypes)) {
-    echo json_encode(['success' => false, 'message' => 'Type de fichier non autorisé. Seuls les images, PDF, TXT et documents Word sont acceptés.']);
-    exit;
-}
-
-// 📏 Limite de taille (10 Mo)
-if ($file['size'] > 10 * 1024 * 1024) {
-    echo json_encode(['success' => false, 'message' => 'Fichier trop volumineux (max. 10 Mo).']);
-    exit;
-}
-
-// 🔁 Vérification de déduplication par hash
-$fileContent = file_get_contents($file['tmp_name']);
-$md5Hash = md5($fileContent);
-
-$stmt = $pdo->prepare("SELECT nom_fichier FROM gesdoc WHERE md5_hash = ?");
-$stmt->execute([$md5Hash]);
-$existing = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if ($existing) {
-    echo json_encode([
-        'success' => true,
-        'already_exists' => true,
-        'existing_file_name' => $existing['nom_fichier'],
-        'message' => 'Ce fichier existe déjà. Utilisation de la version existante.'
-    ]);
-    exit;
-}
-
-// 💾 Sauvegarde du fichier
-$ext = pathinfo($file['name'], PATHINFO_EXTENSION);
-$ext = strtolower(preg_replace('/[^a-z0-9]/', '', $ext)); // nettoyer l'extension
-$storedName = $md5Hash . ($ext ? '.' . $ext : '');
-$fullPath = $docs_dir . $storedName;
-
-if (!move_uploaded_file($file['tmp_name'], $fullPath)) {
-    echo json_encode(['success' => false, 'message' => 'Échec de l’enregistrement du fichier sur le serveur.']);
-    exit;
-}
-
-// 📚 Enregistrement dans la base
-$stmt = $pdo->prepare("INSERT INTO gesdoc (md5_hash, chemin_rel, nom_fichier, description) VALUES (?, ?, ?, ?)");
-$stmt->execute([$md5Hash, 'docs/' . $storedName, $storedName, $description]);
-
-// ✅ Succès
-echo json_encode([
-    'success' => true,
-    'new_file_name' => $storedName,
-    'message' => 'Fichier uploadé et enregistré avec succès.'
-]);
+    <script>
+        // Compteur de caractères en temps réel
+        document.getElementById('description').addEventListener('input', function() {
+            const count = this.value.length;
+            document.getElementById('charCount').textContent = count;
+        });
+    </script>
+</body>
+</html>

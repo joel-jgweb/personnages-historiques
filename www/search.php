@@ -1,28 +1,43 @@
 <?php
-// search.php — Page de résultats en grille de cartes (mis à jour pour n'afficher que les fiches en ligne)
+// search.php — Page de résultats en grille de cartes (avec option de recherche dans Nom uniquement)
 require_once __DIR__ . '/config.php';
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
+
 $databasePath = __DIR__ . '/../data/portraits.sqlite';
 $fiches = [];
 try {
     $pdo = new PDO("sqlite:$databasePath");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $config = loadSiteConfig($pdo);
+
     $query = $_GET['q'] ?? '';
     $metier = $_GET['metier'] ?? '';
     $engagement = $_GET['engagement'] ?? '';
     $lieu = $_GET['lieu'] ?? '';
     $periode = $_GET['periode'] ?? '';
+    $mode = $_GET['mode'] ?? 'all';
 
-    // Tri sur Nom, insensible à la casse et aux accents E
+    // Valider le mode
+    if (!in_array($mode, ['all', 'name'])) {
+        $mode = 'all';
+    }
+
+    // Requête de base : seulement les fiches en ligne
     $sql = "SELECT ID_fiche, Nom, Metier, Engagements, Details, Photo FROM personnages WHERE est_en_ligne = 1";
     $params = [];
+
+    // Recherche principale
     if (!empty($query)) {
-        $sql .= " AND (Nom LIKE ? OR Metier LIKE ? OR Engagements LIKE ? OR Details LIKE ?)";
-        $likeQuery = '%' . $query . '%';
-        $params = array_merge($params, [$likeQuery, $likeQuery, $likeQuery, $likeQuery]);
+        if ($mode === 'name') {
+            $sql .= " AND Nom LIKE ?";
+            $params[] = '%' . $query . '%';
+        } else {
+            $sql .= " AND (Nom LIKE ? OR Metier LIKE ? OR Engagements LIKE ? OR Details LIKE ?)";
+            $likeQuery = '%' . $query . '%';
+            $params = array_merge($params, [$likeQuery, $likeQuery, $likeQuery, $likeQuery]);
+        }
     }
+
+    // Filtres avancés
     if (!empty($metier)) {
         $sql .= " AND Metier LIKE ?";
         $params[] = '%' . $metier . '%';
@@ -31,17 +46,32 @@ try {
         $sql .= " AND Engagements LIKE ?";
         $params[] = '%' . $engagement . '%';
     }
-    // Tri insensible à la casse et aux accents sur E uniquement
+    if (!empty($lieu)) {
+        $sql .= " AND Lieu LIKE ?"; // ← Assure-toi que ta table a une colonne `Lieu`
+        $params[] = '%' . $lieu . '%';
+    }
+    if (!empty($periode)) {
+        // Tu devras adapter cette partie selon la structure de ta base
+        // Exemple si tu as une colonne `Periode` ou `Annee_naissance`
+        // Ici, on suppose une colonne `Periode` au format "1890-1910"
+        $sql .= " AND Periode = ?";
+        $params[] = $periode;
+    }
+
+    // Tri insensible à la casse et aux accents
     $sql .= " ORDER BY LOWER(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(Nom, 'É','e'), 'È','e'), 'Ê','e'), 'Ë','e'), 'é','e'), 'è','e'), 'ê','e'), 'ë','e')) COLLATE NOCASE ASC";
+
+    // Exécution
     if (!empty($params)) {
         $stmt = $pdo->prepare($sql);
         $stmt->execute($params);
     } else {
         $stmt = $pdo->query($sql);
     }
-    $fiches = $stmt->fetchAll();
+    $fiches = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 } catch (Exception $e) {
-    die("❌ Erreur de base de données : " . $e->getMessage());
+    die("❌ Erreur de base de données : " . htmlspecialchars($e->getMessage()));
 }
 ?>
 <!DOCTYPE html>
@@ -209,11 +239,11 @@ try {
             <?php else: ?>
                 <?php foreach ($fiches as $fiche): ?>
                     <div class="fiche-card">
-                       <?php if (!empty($fiche['Photo'])): ?>
-    <div class="card-photo">
-        <img src="<?= htmlspecialchars($fiche['Photo']) ?>" alt="Photo de <?= htmlspecialchars($fiche['Nom']) ?>" loading="lazy">
-    </div>
-<?php endif; ?> 
+                        <?php if (!empty($fiche['Photo'])): ?>
+                            <div class="card-photo">
+                                <img src="<?= htmlspecialchars($fiche['Photo']) ?>" alt="Photo de <?= htmlspecialchars($fiche['Nom']) ?>" loading="lazy">
+                            </div>
+                        <?php endif; ?>
                         <div class="card-content">
                             <h3 class="card-title"><?= htmlspecialchars($fiche['Nom']) ?></h3>
                             <div class="card-meta">
@@ -221,9 +251,9 @@ try {
                                 <strong>Engagement :</strong> <?= htmlspecialchars($fiche['Engagements'] ?? '—') ?>
                             </div>
                             <div class="card-excerpt">
-                                <?= htmlspecialchars(substr(strip_tags(markdownToHtml($fiche['Details'] ?? '')), 0, 250)) ?>...
+                                <?= htmlspecialchars(substr(strip_tags($fiche['Details'] ?? ''), 0, 250)) ?>...
                             </div>
-                            <a href="fiche.php?id=<?= $fiche['ID_fiche'] ?>" class="btn-view">Voir le détail</a>
+                            <a href="fiche.php?id=<?= (int)$fiche['ID_fiche'] ?>" class="btn-view">Voir le détail</a>
                         </div>
                     </div>
                 <?php endforeach; ?>

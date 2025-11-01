@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-// Gestion de l'inactivité (10 minutes)
-define('MAX_IDLE_TIME', 600);
+// Gestion de l'inactivité (30 minutes)
+define('MAX_IDLE_TIME', 1800);
 if (isset($_SESSION['LAST_ACTIVITY']) && (time() - $_SESSION['LAST_ACTIVITY'] > MAX_IDLE_TIME)) {
     session_unset();
     session_destroy();
@@ -95,11 +95,11 @@ $menuItems = [
         'description' => 'Suppression sécurisée d’une fiche'
     ],
     [
-        'title' => '📄 Upload de documents',
-        'url' => 'upload_docs.php',
+        'title' => '📄 Gestion de documents',
+        'url' => 'gestion_docs.php',
         'icon' => '📄',
         'allowedStatuts' => [1,2,6],
-        'description' => 'Ajouter des fichiers dans la base'
+        'description' => 'Gérer les images et les documents associés'
     ],
     [
         'title' => '✅ Valider les fiches',
