@@ -5,7 +5,6 @@ session_start();
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <link rel="stylesheet" href="admin.css">
     <meta charset="UTF-8">
     <title>Test prénom/nom en session</title>
     <style>
