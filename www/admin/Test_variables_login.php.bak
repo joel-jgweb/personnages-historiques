@@ -7,7 +7,6 @@ session_start();
 <head>
     <meta charset="UTF-8">
     <title>Test prénom/nom en session</title>
-    <link rel="stylesheet" href="admin.css">
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; background: #f0f0f0; }
         .container { background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }

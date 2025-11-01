@@ -135,7 +135,6 @@ $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <title>📁 Gestion des Documents</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="admin.css">
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; color: #333; }
         .container { max-width: 1200px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }

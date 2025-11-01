@@ -117,7 +117,6 @@ if (!empty($doc_descs)) {
     <meta charset="UTF-8">
     <title>➕ Ajouter une fiche</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="admin.css">
     <link rel="stylesheet" href="/admin/js/simplemde/simplemde.min.css">
     <style>
         body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }

@@ -124,7 +124,6 @@ if ($handle = opendir($backupDir)) {
     <meta charset="UTF-8">
     <title>🛠️ Console SQL - Exécution de requêtes</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="admin.css">
     <style>
         body {
             font-family: 'Courier New', Courier, monospace;
