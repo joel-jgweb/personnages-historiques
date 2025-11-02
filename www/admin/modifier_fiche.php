@@ -225,87 +225,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     <title>Modifier une fiche personnage</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/admin/js/simplemde/simplemde.min.css">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); position: relative; }
-        h1 { text-align: center; color: #333; }
-        label { font-weight: bold; display: block; margin-top: 15px; }
-        input[type="text"], textarea, select, input[type="url"] { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        textarea { height: 100px; resize: vertical; }
-        button { background-color: #007BFF; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px; }
-        button:hover { background-color: #0056b3; }
-        .alert { padding: 10px; margin: 20px 0; border-radius: 4px; }
-        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
-        .alert-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        .alert-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; } /* Ajout style danger */
-        .form-group { margin-bottom: 15px; }
-        .btn-download {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: #dc3545;
-            color: white;
-            padding: 10px 15px;
-            text-decoration: none;
-            border-radius: 5px;
-            font-weight: bold;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .btn-download:hover {
-            background-color: #c82333;
-            text-decoration: none;
-        }
-        .results-list {
-            margin: 2rem 0;
-            padding: 1rem;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-        .result-item {
-            padding: 1rem;
-            margin-bottom: 0.5rem;
-            background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 5px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .result-item button {
-            margin: 0;
-            padding: 8px 15px;
-        }
-        .result-meta {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-        .info-text {
-            font-size: 0.9em;
-            color: #6c757d;
-            margin-top: 0.5rem;
-        }
-        .resource-pair {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .resource-pair input {
-            flex: 1;
-        }
-        .btn-add {
-            background: #17a2b8;
-            padding: 5px 10px;
-            font-size: 0.9rem;
-        }
-        .btn-remove {
-            background: #dc3545;
-            padding: 5px 10px;
-            font-size: 0.9rem;
-        }
-    </style></head><body>
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
     <div class="container">
         <a href="download_db.php" class="btn-download">📥 Télécharger la base</a>
         <h1>🔍 Rechercher et Modifier une Fiche</h1>

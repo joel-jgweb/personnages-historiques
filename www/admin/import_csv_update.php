@@ -194,35 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 <head>
     <meta charset="UTF-8">
     <title>🔄 Mise à jour depuis CSV</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background: #f9f9f9; }
-        .container { max-width: 1200px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        h1 { text-align: center; color: #2c3e50; margin-bottom: 1.5rem; }
-        .alert { padding: 15px; margin: 20px 0; border-radius: 5px; }
-        .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-danger { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .fiche-item {
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 15px;
-            background: #fafafa;
-        }
-        .fiche-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-        .fiche-title { font-weight: bold; font-size: 1.2rem; color: #2c3e50; }
-        .fiche-id { background: #e9ecef; padding: 2px 8px; border-radius: 10px; font-size: 0.9rem; }
-        .diff { background: #fff3cd; padding: 8px; margin: 8px 0; border-radius: 5px; font-size: 0.95rem; }
-        .diff-label { font-weight: bold; color: #856404; }
-        .btn { padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .btn-primary { background: #007BFF; color: white; }
-        .btn-primary:hover { background: #0056b3; }
-        .checkbox-cell { margin-right: 15px; }
-    </style>
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
     <div class="container">

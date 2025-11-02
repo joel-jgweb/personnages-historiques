@@ -118,28 +118,7 @@ if (!empty($doc_descs)) {
     <title>➕ Ajouter une fiche</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/admin/js/simplemde/simplemde.min.css">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); position: relative; }
-        h1 { text-align: center; color: #333; }
-        label { font-weight: bold; display: block; margin-top: 15px; }
-        input[type="text"], textarea, select { width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
-        textarea { height: 100px; resize: vertical; }
-        button { background-color: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-top: 20px; }
-        button:hover { background-color: #218838; }
-        .alert { padding: 10px; margin: 20px 0; border-radius: 4px; }
-        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .alert-warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
-        .alert-danger { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .form-group { margin-bottom: 15px; }
-        .btn-download { position: absolute; top: 20px; right: 20px; background-color: #dc3545; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; font-weight: bold; }
-        .btn-download:hover { background-color: #c82333; text-decoration: none; }
-        .info-text { font-size: 0.9em; color: #6c757d; margin-top: 0.5rem; }
-        .resource-pair { display: flex; gap: 10px; margin-bottom: 10px; }
-        .resource-pair input { flex: 1; }
-        .btn-add { background: #17a2b8; padding: 5px 10px; font-size: 0.9rem; }
-        .btn-remove { background: #dc3545; padding: 5px 10px; font-size: 0.9rem; }
-    </style>
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
     <div class="container">
