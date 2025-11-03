@@ -2,10 +2,11 @@
 // index.php — Page d'accueil de présentation
 require_once __DIR__ . '/config.php';
 
-$databasePath = __DIR__ . '/../data/portraits.sqlite';
+// Use centralized config for paths and DB
+$sqlitePath = $CONFIG['db']['sqlite_path'] ?? (rtrim($CONFIG['data_path'], '/') . '/portraits.sqlite');
 
 try {
-    $pdo = new PDO("sqlite:$databasePath");
+    $pdo = get_sqlite_pdo($sqlitePath);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     $config = loadSiteConfig($pdo);
 } catch (Exception $e) {
@@ -219,8 +220,7 @@ try {
                 <input type="radio" name="search-mode" value="name">
                 Recherche uniquement sur le Nom
             </label>
-            <button class="popup-option" style="background: <?= htmlspecialchars($config['secondary_color']) ?>; color: white; border-color: <?= htmlspecialchars($config['secondary_color']) ?>; margin-top: 1rem;" onclick="confirmSearch()">
-                Valider et lancer la recherche
+            <button class="popup-option" style="background: <?= htmlspecialchars($config['secondary_color']) ?>; color: white; border-color: <?= htmlspecialchars($config['secondary_color']) ?>; m[...]                Valider et lancer la recherche
             </button>
         </div>
     </div>
