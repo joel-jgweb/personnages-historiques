@@ -1,5 +1,6 @@
 <?php
 session_start();
+$CONFIG = require_once __DIR__ . '/config.php';
 // Ici tu peux vérifier les droits d'accès si besoin
 
 if (!isset($_GET['file'])) {
@@ -7,7 +8,8 @@ if (!isset($_GET['file'])) {
     exit('Missing file parameter.');
 }
 $filename = basename($_GET['file']); // Sécurité : pas de path traversal
-$filepath = __DIR__ . "/../data/docs/" . $filename;
+$docsPath = rtrim($CONFIG['data_path'], '/') . '/docs';
+$filepath = $docsPath . "/" . $filename;
 
 if (!file_exists($filepath)) {
     http_response_code(404);

@@ -1,12 +1,10 @@
 <?php
 // search.php — Page de résultats en grille de cartes (avec option de recherche dans Nom uniquement)
-require_once __DIR__ . '/config.php';
+$CONFIG = require_once __DIR__ . '/config.php';
 
-$databasePath = __DIR__ . '/../data/portraits.sqlite';
 $fiches = [];
 try {
-    $pdo = new PDO("sqlite:$databasePath");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = get_sqlite_pdo();
     $config = loadSiteConfig($pdo);
 
     $query = $_GET['q'] ?? '';
