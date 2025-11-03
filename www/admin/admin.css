@@ -676,3 +676,166 @@ select {
     color: #6c757d;
     margin: 0 5px;
 }
+
+/* ===== Styles spécifiques pour gestion_docs.php ===== */
+.upload-section {
+    background: #f1f8ff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    border: 2px dashed #ddd;
+}
+
+.search-bar {
+    text-align: center;
+    margin: 20px 0;
+}
+
+.search-bar input {
+    width: 60%;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.card {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.thumbnail {
+    width: 100%;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3em;
+    margin-bottom: 10px;
+    background: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.filename {
+    font-size: 0.85em;
+    color: #555;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.desc {
+    margin: 8px 0;
+    font-size: 0.9em;
+    min-height: 2em;
+}
+
+.card form {
+    margin-top: 10px;
+}
+
+.card input[type="text"] {
+    width: 100%;
+    font-size: 0.85em;
+    padding: 4px;
+}
+
+.warning {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeeba;
+}
+
+/* ===== Styles spécifiques pour configurer_site.php ===== */
+.color-picker {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+input[type="color"] {
+    width: 80px;
+    height: 40px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.current-image {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.current-image img {
+    max-height: 100px;
+    margin-top: 0.5rem;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+
+.preview-box {
+    padding: 2rem;
+    border-radius: 10px;
+    margin: 2rem 0;
+    color: white;
+    text-align: center;
+}
+
+.preview-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.preview-subtitle {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    opacity: 0.9;
+}
+
+.preview-btn {
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 30px;
+    font-weight: bold;
+}
+
+.radio-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.bg-image-section {
+    transition: all 0.3s ease;
+}
+
+.bg-image-section.hidden {
+    display: none;
+    opacity: 0;
+    height: 0;
+    padding: 0;
+    margin: 0;
+    border: none;
+}
+
+.hidden {
+    display: none;
+}
