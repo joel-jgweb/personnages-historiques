@@ -53,17 +53,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Connexion à l'Administration</title>
-    <style>
-        body { font-family: Arial, sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .login-container { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); width: 350px; text-align: center; }
-        h2 { margin-bottom: 20px; color: #333; }
-        input[type="text"], input[type="password"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        button { width: 100%; padding: 12px; background: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        button:hover { background: #0056b3; }
-        .error { color: red; margin: 10px 0; }
-    </style>
+    <link rel="stylesheet" href="admin.css">
 </head>
-<body>
+<body class="login-page">
     <div class="login-container">
         <h2>🔐 Connexion Admin</h2>
         <?php if ($error): ?>

@@ -69,24 +69,7 @@ if (isset($_GET['id'])) {
     <meta charset="UTF-8">
     <title>🗑️ Supprimer une fiche</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f9f9f9; }
-        .container { max-width: 800px; margin: auto; background: #fff; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); padding: 30px; }
-        h1 { text-align: center; color: #dc3545; }
-        .alert { padding: 10px; border-radius: 5px; margin-bottom: 20px; }
-        .alert-success { background: #d4edda; color: #155724; }
-        .alert-danger { background: #f8d7da; color: #721c24; }
-        .fiche-list { margin: 20px 0; }
-        .fiche-item { padding: 10px; border-bottom: 1px solid #eee; }
-        .fiche-item a { color: #007bff; text-decoration: none; font-weight: bold; }
-        .fiche-item a:hover { text-decoration: underline; }
-        .fiche-summary { border: 1px solid #eee; border-radius: 6px; padding: 20px; background: #fafafa; margin-bottom: 20px; }
-        .btn-supprimer { background: #dc3545; color: #fff; padding: 10px 24px; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
-        .btn-supprimer:hover { background: #b71c1c; }
-        label { font-weight: bold; }
-        input[type="text"] { padding: 8px; width: 100%; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; }
-        form { margin-bottom: 20px; }
-    </style>
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
 <div class="container">

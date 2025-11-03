@@ -135,32 +135,7 @@ $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <title>📁 Gestion des Documents</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; background: #f8f9fa; color: #333; }
-        .container { max-width: 1200px; margin: auto; background: white; padding: 25px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1, h2 { text-align: center; color: #2c3e50; }
-        .message { padding: 12px; margin-bottom: 20px; border-radius: 6px; text-align: center; }
-        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
-        .upload-section { background: #f1f8ff; padding: 20px; border-radius: 8px; margin-bottom: 30px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="file"], input[type="text"] { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        .btn-delete { background: #dc3545; padding: 6px 12px; font-size: 0.9em; }
-        .btn-delete:hover { background: #c82333; }
-        .search-bar { text-align: center; margin: 20px 0; }
-        .search-bar input { width: 60%; padding: 10px; font-size: 16px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; margin-top: 20px; }
-        .card { border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; text-align: center; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .thumbnail { width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; font-size: 3em; margin-bottom: 10px; background: #eee; border-radius: 4px; }
-        .filename { font-size: 0.85em; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .desc { margin: 8px 0; font-size: 0.9em; min-height: 2em; }
-        .card form { margin-top: 10px; }
-        .card input[type="text"] { width: 100%; font-size: 0.85em; padding: 4px; }
-    </style>
+    <link rel="stylesheet" href="admin.css">
 </head>
 <body>
     <div class="container">

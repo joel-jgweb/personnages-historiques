@@ -122,93 +122,9 @@ function userCanAccess($allowedStatuts) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tableau de bord — Administration</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-            padding: 0;
-            color: #333;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 40px auto;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
-            padding: 30px;
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        .header h1 {
-            font-size: 2.8rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-            color: #764ba2;
-        }
-        .header p {
-            color: #667eea;
-            font-size: 1.2rem;
-        }
-        .user-info {
-            margin-bottom: 2rem;
-            font-size: 1.1rem;
-            background: #f5f5ff;
-            border-radius: 5px;
-            padding: 10px 20px;
-            color: #333;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.07);
-        }
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 24px;
-        }
-        .menu-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background: #fafaff;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(102, 126, 234, 0.09);
-            padding: 30px 18px;
-            text-decoration: none;
-            color: #333;
-            transition: transform 0.2s, box-shadow 0.2s;
-            min-height: 175px;
-            position: relative;
-        }
-        .menu-item:hover {
-            transform: translateY(-4px) scale(1.03);
-            box-shadow: 0 6px 15px rgba(220, 53, 69, 0.4);
-        }
-        .icon {
-            font-size: 2.7rem;
-            margin-bottom: 10px;
-        }
-        .no-access {
-            text-align: center;
-            padding: 4rem 2rem;
-            color: #6c757d;
-            font-style: italic;
-        }
-        @media (max-width: 768px) {
-            .container {
-                margin: 20px;
-                padding: 20px;
-            }
-            .header h1 {
-                font-size: 2rem;
-            }
-            .menu-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="admin.css">
 </head>
-<body>
+<body class="index-page">
     <div class="container">
         <div class="header">
             <h1>🔐 Administration</h1>
