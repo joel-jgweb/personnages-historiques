@@ -1,0 +1,16 @@
+<?php
+// config/config.local.php.template
+// Template pour la configuration locale — créer config/config.local.php à partir de ce fichier et y mettre les valeurs sensibles.
+return [
+    'root_path' => dirname(__DIR__),
+    'data_path' => dirname(__DIR__) . '/data',
+    'public_path' => dirname(__DIR__) . '/www',
+    'db' => [
+        'driver' => 'sqlite',
+        'sqlite_path' => dirname(__DIR__) . '/data/portraits.sqlite',
+    ],
+    'base_url' => 'https://example.com',
+    'display_errors' => false,
+    'log_path' => dirname(__DIR__) . '/logs',
+];
+?
