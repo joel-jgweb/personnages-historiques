@@ -1,9 +1,10 @@
 <?php
 // acces_docs.php - Script sécurisé pour servir les fichiers uploadés dans /data/docs/
 // Utilisation : /acces_docs.php?f=IMG_250427120000.jpg
+require_once __DIR__ . '/config.php';
 
 // Chemin vers le dossier sécurisé (en dehors de www/)
-define('SECURE_DOCS_DIR', __DIR__ . '/../data/docs/');
+define('SECURE_DOCS_DIR', APP_DATA . '/docs/');
 
 // Récupérer le nom du fichier demandé
 $filename = $_GET['f'] ?? '';

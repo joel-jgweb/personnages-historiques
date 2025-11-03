@@ -3,14 +3,12 @@
 require_once __DIR__ . '/config.php';
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-$databasePath = __DIR__ . '/../data/portraits.sqlite';
 $fiche = null;
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     die("ID de fiche invalide.");
 }
 try {
-    $pdo = new PDO("sqlite:$databasePath");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = get_sqlite_pdo();
     $config = loadSiteConfig($pdo);
     $stmt = $pdo->prepare("SELECT * FROM personnages WHERE ID_fiche = ? AND est_en_ligne = 1");
     $stmt->execute([$_GET['id']]);

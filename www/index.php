@@ -2,11 +2,8 @@
 // index.php — Page d'accueil de présentation
 require_once __DIR__ . '/config.php';
 
-$databasePath = __DIR__ . '/../data/portraits.sqlite';
-
 try {
-    $pdo = new PDO("sqlite:$databasePath");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo = get_sqlite_pdo();
     $config = loadSiteConfig($pdo);
 } catch (Exception $e) {
     die("❌ Erreur de base de données : " . $e->getMessage());

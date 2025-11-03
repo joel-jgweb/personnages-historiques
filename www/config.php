@@ -1,5 +1,63 @@
 <?php
-// config.php - Charge la configuration du site et fournit des fonctions utilitaires
+/**
+ * config.php - Public bootstrap for loading central configuration
+ * 
+ * This file:
+ * - Loads config/config.local.php (fallback to config/config.example.php)
+ * - Computes root/data/public paths
+ * - Computes sqlite path
+ * - Exposes get_sqlite_pdo() helper
+ * - Provides site configuration utilities
+ */
+
+// Load central configuration
+$configFile = __DIR__ . '/../config/config.local.php';
+if (!file_exists($configFile)) {
+    $configFile = __DIR__ . '/../config/config.example.php';
+}
+
+if (!file_exists($configFile)) {
+    die('❌ Configuration file not found. Please create config/config.local.php from config/config.local.php.template');
+}
+
+$appConfig = require $configFile;
+
+// Compute paths
+define('APP_ROOT', $appConfig['paths']['root'] ?? dirname(__DIR__));
+define('APP_DATA', $appConfig['paths']['data'] ?? APP_ROOT . '/data');
+define('APP_WWW', $appConfig['paths']['www'] ?? APP_ROOT . '/www');
+
+// Compute SQLite path
+define('SQLITE_PATH', $appConfig['db']['path'] ?? APP_DATA . '/portraits.sqlite');
+
+/**
+ * Get SQLite PDO connection
+ * 
+ * @return PDO Database connection
+ * @throws Exception if connection fails
+ */
+function get_sqlite_pdo() {
+    static $pdo = null;
+    
+    if ($pdo === null) {
+        try {
+            $pdo = new PDO("sqlite:" . SQLITE_PATH);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (Exception $e) {
+            error_log("Database connection error: " . $e->getMessage());
+            throw new Exception("❌ Erreur de connexion à la base de données");
+        }
+    }
+    
+    return $pdo;
+}
+
+/**
+ * Load site configuration from database
+ * 
+ * @param PDO $pdo Database connection
+ * @return array Site configuration
+ */
 function loadSiteConfig($pdo) {
     $config = [
         'site_title' => 'Portraits des Militants',

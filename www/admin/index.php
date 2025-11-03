@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../config.php';
 session_start();
 
 // Gestion de l'inactivité (30 minutes)

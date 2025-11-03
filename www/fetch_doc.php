@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/config.php';
 session_start();
 // Ici tu peux vérifier les droits d'accès si besoin
 
@@ -6,8 +7,8 @@ if (!isset($_GET['file'])) {
     http_response_code(400);
     exit('Missing file parameter.');
 }
-$filename = basename($_GET['file']); // Sécurité : pas de path traversal
-$filepath = __DIR__ . "/../data/docs/" . $filename;
+$filename = basename($_GET['file']); // Sécurité : pas de path traversal
+$filepath = APP_DATA . "/docs/" . $filename;
 
 if (!file_exists($filepath)) {
     http_response_code(404);
