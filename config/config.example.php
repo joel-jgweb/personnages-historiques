@@ -13,4 +13,3 @@ return [
     'display_errors' => true,
     'log_path' => dirname(__DIR__) . '/logs',
 ];
-?
