@@ -17,7 +17,7 @@ if (!file_exists($configFile)) {
 }
 
 if (!file_exists($configFile)) {
-    die('❌ Configuration file not found. Please create config/config.local.php from config/config.local.php.template');
+    die('❌ Configuration file not found. Please create config/config.local.php from config/config.local.php.template or ensure config/config.example.php exists');
 }
 
 $appConfig = require $configFile;
