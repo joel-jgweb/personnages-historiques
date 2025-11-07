@@ -2,7 +2,7 @@
 // index.php — Page d'accueil (V15) — same as your V15 but background image now at 30% opacity with a light blur
 // Seule la façon dont l'image de fond est rendue a été modifiée (opacité + blur).
 
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/bootstrap.php';
 
 $localConfig = file_exists(__DIR__ . '/../config/config.local.php')
     ? require __DIR__ . '/../config/config.local.php'

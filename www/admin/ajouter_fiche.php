@@ -10,7 +10,7 @@ require_once 'permissions.php';
 // Autorise : Rédacteur Fiches (3), Administrateur Fiches (2), Super-Administrateur (1), Administrateur Simple (6)
 checkUserPermission([1, 2, 3, 6]);
 
-require_once '../config.php';
+require_once '../bootstrap.php';
 $dbPath = __DIR__ . '/../../data/portraits.sqlite';
 $message = '';
 

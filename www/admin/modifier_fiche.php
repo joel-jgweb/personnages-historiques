@@ -35,7 +35,7 @@ function checkFicheOwnership($fiche, $userStatut, $userLogin) {
 }
 // --- FIN DE LA FONCTION DE VÉRIFICATION DE PROPRIÉTÉ ---
 
-require_once '../config.php'; // Ce fichier est censé contenir urlToMarkdownLink()
+require_once '../bootstrap.php'; // Ce fichier est censé contenir urlToMarkdownLink()
 
 $dbPath = __DIR__ . '/../../data/portraits.sqlite';
 $message = '';

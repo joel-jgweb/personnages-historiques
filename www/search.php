@@ -7,11 +7,11 @@
 
 // Charger la configuration locale
 $localConfig = file_exists(__DIR__ . '/../config/config.local.php')
-    ? require __DIR__ . '/../config/config.local.php'
+    ? require __DIR__ . '/../config/config.php'
     : [];
 
 // Inclure helpers (getDatabasePath etc.)
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/bootstrap.php';
 
 // DB path
 $databasePath = isset($localConfig['database_path']) ? $localConfig['database_path'] : (__DIR__ . '/../data/portraits.sqlite');

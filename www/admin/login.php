@@ -4,7 +4,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 // login.php
 session_start();
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../bootstrap.php';
 
 $dbPath = '../../data/portraits.sqlite';
 $error = '';

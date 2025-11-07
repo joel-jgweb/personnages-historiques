@@ -7,7 +7,7 @@ if (!isset($_SESSION['user_id'])) {
 require_once 'permissions.php';
 checkUserPermission([1]);
 // configurer_site.php - Interface d'administration pour modifier la configuration du site
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../bootstrap.php';
 
 session_start();
 

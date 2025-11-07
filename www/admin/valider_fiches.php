@@ -12,7 +12,7 @@ if (!in_array($_SESSION['user_statut'], $roles_autorises)) {
     die("<h1 style='color: #dc3545; text-align: center; padding: 50px;'>⛔ Accès refusé</h1><p style='text-align: center;'>Vous n'avez pas les permissions nécessaires pour valider les fiches.</p>");
 }
 
-require_once '../../www/config.php';
+require_once '../../www/bootstrap.php';
 $dbPath = '../../data/portraits.sqlite';
 $message = '';
 $fichesNonValidees = [];

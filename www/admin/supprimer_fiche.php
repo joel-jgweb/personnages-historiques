@@ -13,7 +13,7 @@ session_start();
 require_once 'permissions.php';
 checkUserPermission([1, 2, 6]);
 
-require_once '../config.php';
+require_once '../bootstrap.php';
 
 $dbPath = __DIR__ . '/../../data/portraits.sqlite';
 $message = '';

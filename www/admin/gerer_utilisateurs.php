@@ -8,7 +8,7 @@ if (!isset($_SESSION['user_id'])) {
 require_once 'permissions.php';
 checkUserPermission([1]);
 
-require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../bootstrap.php';
 $dbPath = '../../data/portraits.sqlite';
 $message = '';
 

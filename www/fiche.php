@@ -6,7 +6,7 @@
 // - affichage intégral de chaque item (aucune troncature)
 
 $localConfig = file_exists(__DIR__ . '/../config/config.local.php') ? require __DIR__ . '/../config/config.local.php' : [];
-require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/bootstrap.php';
 
 // DB path et docs dir
 $databasePath = $localConfig['database_path'] ?? (__DIR__ . '/../data/portraits.sqlite');
