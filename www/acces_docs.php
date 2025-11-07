@@ -2,8 +2,15 @@
 // acces_docs.php - Script sécurisé pour servir les fichiers uploadés dans /data/docs/
 // Utilisation : /acces_docs.php?f=IMG_250427120000.jpg
 
-// Chemin vers le dossier sécurisé (en dehors de www/)
-define('SECURE_DOCS_DIR', __DIR__ . '/../data/docs/');
+// Charger la configuration locale (hors racine web)
+$localConfig = file_exists(__DIR__ . '/../config/config.local.php')
+    ? require __DIR__ . '/../config/config.local.php'
+    : [];
+
+// Chemin vers le dossier sécurisé (en dehors de www/), utiliser data_path si défini
+$secureDocsDir = isset($localConfig['data_path'])
+    ? rtrim($localConfig['data_path'], '/\\') . '/docs/'
+    : __DIR__ . '/../data/docs/';
 
 // Récupérer le nom du fichier demandé
 $filename = $_GET['f'] ?? '';
@@ -29,7 +36,7 @@ if (!in_array($ext, $allowed_exts)) {
 }
 
 // Chemin complet du fichier
-$filepath = SECURE_DOCS_DIR . $filename;
+$filepath = $secureDocsDir . $filename;
 
 // Vérifier que le fichier existe
 if (!file_exists($filepath)) {
@@ -59,3 +66,4 @@ header('Content-Type: ' . $mimeType);
 header('Content-Length: ' . filesize($filepath));
 readfile($filepath);
 exit;
+?>

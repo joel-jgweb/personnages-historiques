@@ -1,0 +1,40 @@
+<?php
+// config/config.local.php.dist
+// Modèle de configuration locale (copier en config.local.php en dehors de la racine web
+// et adapter pour ton environnement). NE PAS committer config.local.php contenant des secrets.
+//
+// Exemple minimal — adapter les chemins absolus si tu stockes les données ailleurs.
+
+return [
+    // Chemins (chemins absolus recommandés si la config est en dehors du projet web)
+    // Chemin vers le fichier SQLite (ex. '/var/www/data/portraits.sqlite' ou '../data/portraits.sqlite')
+    'database_path' => __DIR__ . '/../data/portraits.sqlite',
+
+    // Dossier "data" racine (utilisé par certains scripts pour documents/backup)
+    // Si tu définis database_path en absolu, data_path peut rester NULL ou être le dossier parent.
+    'data_path' => __DIR__ . '/../data',
+
+    // Dossier où sont stockés les docs/images (peut être sous data_path)
+    'docs_path' => __DIR__ . '/../data/docs',
+
+    // Dossier de sauvegardes (backups) si utilisé
+    'backup_path' => __DIR__ . '/../data/backups',
+
+    // Paramètres site (valeurs par défaut, sur‑écrivent celles de la BDD si souhaité)
+    'site_title' => 'Personnages Historiques',
+    'site_subtitle' => 'Collections & notices',
+    'association_name' => 'Mon Association',
+    'association_address' => "1 rue Exemple\n75000 Paris",
+
+    // Couleurs (hex)
+    'primary_color' => '#2c3e50',
+    'secondary_color' => '#6c757d',
+    'background_color' => '#ffffff',
+
+    // Chemins relatifs pour affichage (ex: /uploads/logo.png). Peut être NULL.
+    'logo_path' => null,
+    'background_image' => null,
+
+    // Autres variables spécifiques à ton hébergement peuvent être ajoutées ici.
+];
+?>

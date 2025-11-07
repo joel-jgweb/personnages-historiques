@@ -2,12 +2,22 @@
 session_start();
 // Ici tu peux vérifier les droits d'accès si besoin
 
+// Charger la configuration locale (fichier non versionné en production)
+$localConfig = file_exists(__DIR__ . '/../config/config.local.php')
+    ? require __DIR__ . '/../config/config.local.php'
+    : [];
+
+// Déterminer le dossier docs en utilisant data_path si fourni
+$docsDir = isset($localConfig['data_path'])
+    ? rtrim($localConfig['data_path'], '/\\') . '/docs/'
+    : __DIR__ . '/../data/docs/';
+
 if (!isset($_GET['file'])) {
     http_response_code(400);
     exit('Missing file parameter.');
 }
 $filename = basename($_GET['file']); // Sécurité : pas de path traversal
-$filepath = __DIR__ . "/../data/docs/" . $filename;
+$filepath = $docsDir . $filename;
 
 if (!file_exists($filepath)) {
     http_response_code(404);
@@ -17,6 +27,7 @@ if (!file_exists($filepath)) {
 // Détection du type MIME
 $finfo = finfo_open(FILEINFO_MIME_TYPE);
 $mime = finfo_file($finfo, $filepath);
+finfo_close($finfo);
 header('Content-Type: ' . $mime);
 
 // Pour afficher ou télécharger selon l'usage

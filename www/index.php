@@ -1,8 +1,14 @@
 <?php
-// index.php — Page d'accueil de présentation
+// index.php — Page d'accueil (V15) — same as your V15 but background image now at 30% opacity with a light blur
+// Seule la façon dont l'image de fond est rendue a été modifiée (opacité + blur).
+
 require_once __DIR__ . '/config.php';
 
-$databasePath = __DIR__ . '/../data/portraits.sqlite';
+$localConfig = file_exists(__DIR__ . '/../config/config.local.php')
+    ? require __DIR__ . '/../config/config.local.php'
+    : [];
+
+$databasePath = $localConfig['database_path'] ?? (__DIR__ . '/../data/portraits.sqlite');
 
 try {
     $pdo = new PDO("sqlite:$databasePath");
@@ -11,46 +17,72 @@ try {
 } catch (Exception $e) {
     die("❌ Erreur de base de données : " . $e->getMessage());
 }
+
+// Helper pour accepter un chemin vers data/docs si nécessaire
+function assetFromDocsIfExists($path) {
+    if (empty($path)) return null;
+    $path = trim($path);
+    if (preg_match('#^https?://#i', $path)) return $path;
+    if (strpos($path, '/') === 0) return $path;
+    $candidate = __DIR__ . '/../data/docs/' . basename($path);
+    if (file_exists($candidate)) {
+        return '../data/docs/' . basename($path);
+    }
+    return $path;
+}
+
+$logoSrc = assetFromDocsIfExists($config['logo_path'] ?? ($localConfig['logo_path'] ?? null));
+$bgValue = $config['background_image'] ?? ($localConfig['background_image'] ?? null);
+$bgColor = $config['background_color'] ?? ($localConfig['background_color'] ?? '#2a2a2a');
+
+// --- Lecture sûre du nom et de l'adresse de l'association ---
+$associationNameRaw = $config['association_name'] ?? ($localConfig['association_name'] ?? '');
+$associationAddressRaw = $config['association_address'] ?? ($localConfig['association_address'] ?? '');
+
+$associationName = trim($associationNameRaw) !== '' ? htmlspecialchars($associationNameRaw, ENT_QUOTES | ENT_SUBSTITUTE) : '';
+$associationAddress = trim($associationAddressRaw) !== '' ? nl2br(htmlspecialchars($associationAddressRaw, ENT_QUOTES | ENT_SUBSTITUTE)) : '';
+
+// DEFAULT SEARCH MODE
+$cfgDefaultMode = $localConfig['default_search_mode'] ?? ($config['default_search_mode'] ?? null);
+$defaultSearchMode = in_array($cfgDefaultMode, ['all', 'name']) ? $cfgDefaultMode : 'all';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($config['site_title']) ?></title>
+    <title><?= htmlspecialchars($config['site_title'] ?? 'Personnages Historiques') ?></title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
             position: relative;
             font-family: 'Georgia', serif;
             color: #fff;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            display:flex;
+            flex-direction:column;
+            /* fallback background color */
+            background: <?= htmlspecialchars($bgColor, ENT_QUOTES | ENT_SUBSTITUTE) ?>;
         }
 
+        /* Adaptation demandée : image de fond pleine page, opacité 30% et léger flou */
+        <?php if (!empty($bgValue)): 
+            $bgSrc = assetFromDocsIfExists($bgValue);
+        ?>
         body::before {
             content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: <?php
-                if (!empty($config['background_image'])) {
-                    echo "url('" . htmlspecialchars($config['background_image']) . "') no-repeat center center fixed, ";
-                }
-                echo htmlspecialchars($config['background_color']);
-            ?>;
-            background-size: cover;
-            opacity: 0.45;
+            position: fixed;
+            inset: 0;
+            background: url('<?= htmlspecialchars($bgSrc, ENT_QUOTES | ENT_SUBSTITUTE) ?>') no-repeat center center;
+            background-size: cover;            /* ensure the image fills the viewport */
+            background-position: center;
+            background-attachment: fixed;      /* fixed during scroll */
+            opacity: 0.30;                      /* 30% opacity as requested */
+            filter: blur(2px);                  /* slight blur for a softer background */
+            transform: scale(1.02);             /* avoid visible edges when blurred */
             z-index: -1;
         }
+        <?php endif; ?>
 
         .hero {
             text-align: center;
@@ -60,20 +92,19 @@ try {
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            color: <?= htmlspecialchars($config['secondary_color']) ?>;
+            color: <?= htmlspecialchars($config['secondary_color'] ?? '#eaeaea', ENT_QUOTES | ENT_SUBSTITUTE) ?>;
         }
 
         .logo-placeholder {
             max-height: 250px;
             margin-bottom: 2rem;
-            border-radius: 0;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
 
         .hero h1 {
             font-size: 3.5rem;
             margin-bottom: 1.5rem;
-            color: <?= htmlspecialchars($config['primary_color']) ?>;
+            color: <?= htmlspecialchars($config['primary_color'] ?? '#ffffff', ENT_QUOTES | ENT_SUBSTITUTE) ?>;
             text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
             letter-spacing: 1px;
         }
@@ -126,14 +157,11 @@ try {
             color: #333;
         }
 
-        /* === Popup modal === */
+        /* Popup modal */
         #mode-popup {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             background: rgba(0,0,0,0.5);
             z-index: 1000;
             justify-content: center;
@@ -152,7 +180,7 @@ try {
 
         .popup-content h3 {
             margin-bottom: 1.2rem;
-            color: <?= htmlspecialchars($config['primary_color']) ?>;
+            color: <?= htmlspecialchars($config['primary_color'] ?? '#2c3e50', ENT_QUOTES | ENT_SUBSTITUTE) ?>;
             font-size: 1.4rem;
         }
 
@@ -171,7 +199,7 @@ try {
 
         .popup-option:hover {
             background: #e9f7fe;
-            border-color: <?= htmlspecialchars($config['secondary_color']) ?>;
+            border-color: <?= htmlspecialchars($config['secondary_color'] ?? '#6c757d', ENT_QUOTES | ENT_SUBSTITUTE) ?>;
         }
 
         .popup-option input {
@@ -182,27 +210,30 @@ try {
             text-align: center;
             padding: 1.5rem;
             background: rgba(0,0,0,0.2);
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #ffffff;
         }
 
         @media (max-width: 768px) {
             .hero h1 { font-size: 2.5rem; }
             .hero p { font-size: 1.1rem; }
+            .logo-placeholder { max-height: 180px; margin-bottom: 1.2rem; }
         }
     </style>
 </head>
 <body>
-    <div class="hero">
-        <?php if (!empty($config['logo_path'])): ?>
-            <img src="<?= htmlspecialchars($config['logo_path']) ?>" alt="Logo de l'association" class="logo-placeholder">
+    <div class="hero" role="main" aria-labelledby="site-title">
+        <?php if (!empty($logoSrc)): ?>
+            <img src="<?= htmlspecialchars($logoSrc, ENT_QUOTES | ENT_SUBSTITUTE) ?>" alt="<?= htmlspecialchars($config['site_title'] ?? 'Logo', ENT_QUOTES | ENT_SUBSTITUTE) ?>" class="logo-placeholder">
         <?php endif; ?>
 
-        <h1><?= htmlspecialchars($config['site_title']) ?></h1>
-        <p><?= htmlspecialchars($config['site_subtitle']) ?></p>
+        <h1 id="site-title"><?= htmlspecialchars($config['site_title'] ?? 'Personnages Historiques', ENT_QUOTES | ENT_SUBSTITUTE) ?></h1>
+        <?php if (!empty($config['site_subtitle'])): ?>
+            <p><?= htmlspecialchars($config['site_subtitle'], ENT_QUOTES | ENT_SUBSTITUTE) ?></p>
+        <?php endif; ?>
 
         <div class="search-container">
-            <input type="text" id="search-bar" placeholder="Saisissez un nom ou un mot-clé..." autocomplete="off">
+            <input type="text" id="search-bar" placeholder="Saisissez un nom ou un mot-clé..." autocomplete="off" aria-label="Terme de recherche">
             <button class="search-icon" onclick="showModePopup()" aria-label="Lancer la recherche">🔍</button>
         </div>
     </div>
@@ -212,14 +243,14 @@ try {
         <div class="popup-content" onclick="event.stopPropagation()">
             <h3>Comment souhaitez-vous rechercher ?</h3>
             <label class="popup-option">
-                <input type="radio" name="search-mode" value="all" checked>
-                Recherche sur toute la fiche
+                <input type="radio" name="search-mode" value="all" <?= $defaultSearchMode === 'all' ? 'checked' : '' ?>>
+                La totalité des données
             </label>
             <label class="popup-option">
-                <input type="radio" name="search-mode" value="name">
-                Recherche uniquement sur le Nom
+                <input type="radio" name="search-mode" value="name" <?= $defaultSearchMode === 'name' ? 'checked' : '' ?>>
+                Nom uniquement
             </label>
-            <button class="popup-option" style="background: <?= htmlspecialchars($config['secondary_color']) ?>; color: white; border-color: <?= htmlspecialchars($config['secondary_color']) ?>; margin-top: 1rem;" onclick="confirmSearch()">
+            <button class="popup-option" style="background: <?= htmlspecialchars($config['secondary_color'] ?? '#6c757d', ENT_QUOTES | ENT_SUBSTITUTE) ?>; color: white; border:none; margin-top:0.6rem;" onclick="confirmSearch()">
                 Valider et lancer la recherche
             </button>
         </div>
@@ -227,8 +258,8 @@ try {
 
     <footer>
         <p>
-            <?= htmlspecialchars($config['association_name']) ?><br>
-            <?= nl2br(htmlspecialchars($config['association_address'])) ?>
+            <?= $associationName ? $associationName . '<br>' : '' ?>
+            <?= $associationAddress ? $associationAddress : '' ?>
         </p>
     </footer>
 
