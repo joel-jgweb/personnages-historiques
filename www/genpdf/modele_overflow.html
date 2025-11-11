@@ -1,5 +1,25 @@
-<div class="details-wrapper-overflow">
-    <div class="details-zone-overflow">
-        [DetailsOverflow]
-    </div>
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* overflow pages: keep the same left-offset (60mm) and simple flow for continuation text */
+        body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 10pt; margin:0; padding:0; }
+        .overflow-table { width:100%; border-collapse: collapse; }
+        .overflow-left { width:60mm; }
+        .overflow-right { vertical-align: top; padding-left: 4mm; padding-right: 6mm; line-height: 1.45; font-size: 10pt; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; }
+        .continuation-note { font-style: italic; font-size: 9pt; margin-bottom:4mm; color:#333; }
+    </style>
+</head>
+<body>
+    <table class="overflow-table">
+        <tr>
+            <td class="overflow-left"></td>
+            <td class="overflow-right">
+                <div class="continuation-note">Suite de la page précédente</div>
+                [DetailsOverflow]
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

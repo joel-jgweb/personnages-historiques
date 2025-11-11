@@ -1,8 +1,0 @@
-# Bloquer accès direct aux dossiers sensibles
-<IfModule mod_authz_core.c>
-  <LocationMatch "^/(?:config|data)(?:/|$)">
-    Require all denied
-  </LocationMatch>
-</IfModule>
-
-Options -Indexes

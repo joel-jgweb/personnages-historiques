@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['fiche_id'])) {
                 if ($count > 0) {
                     // 2. REDIRECTION VERS LE GÉNÉRATEUR
                     // Redirige l'utilisateur vers le script de génération du PDF
-                    header("Location: generer_pdf.php?id=" . $fiche_id);
+                    header("Location:generer_pdf_tcpdf.php?id=" . $fiche_id);
                     exit();
                 } else {
                     $message_erreur = "Cette fiche n'existe pas ou n'est pas encore en ligne !";

@@ -1,39 +1,74 @@
-<div class="fiche-container">
-    <div class="header-zone">
-       
-        <div class="header-id">
-            [NOM DE L'ASSOCIATION]<br>
-            [SLOGAN/SOUS-TITRE]
-        </div>
-    </div>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* Template page 1 - table based */
+        body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 10pt; margin:0; padding:0; }
+        .fiche-container { width: 100%; }
+        /* bandeau : left bio-data / right photo */
+        .bandeau-table { width: 100%; border-collapse: collapse; margin-bottom: 6mm; }
+        .bandeau-left { vertical-align: top; padding-right: 4mm; }
+        .bandeau-right { width: 40mm; vertical-align: top; text-align: center; } /* photo 40mm */
+        .nom-fiche { font-size: 14pt; font-weight: bold; margin-bottom: 3px; }
+        .bio-data { font-style: italic; color: #666; font-size: 10pt; line-height:1.3; }
+        .bandeau-photo-img { width: 40mm; height: 40mm; object-fit: cover; display:block; border:1px solid #ccc; }
 
-    <!-- ✅ BANDEAU AVEC TABLEAU (méthode fiable pour wkhtmltopdf) -->
+        /* zone details : use 2-column table to guarantee 60mm left margin for annotations */
+        .details-table { width: 100%; border-collapse: collapse; }
+        .details-margin { width: 60mm; } /* left margin for annotations / space reserved */
+        .details-cell { vertical-align: top; padding-left: 4mm; padding-right: 6mm; font-size: 10pt; line-height: 1.4; -webkit-hyphens:auto; -moz-hyphens:auto; hyphens:auto; }
+
+        /* indication suite */
+        .suite-indication { text-align: right; font-weight: bold; margin-top: 4px; font-size:9pt; }
+
+        /* sources zone at bottom of page 1: use a block with smaller font */
+        .sources-zone { font-style: italic; font-size: 9pt; color: #444; margin-top: 6mm; }
+        .sources-divider { border-top: 1px solid #ccc; margin-top: 4px; padding-top: 4px; font-size: 9pt; text-align: center; color:#333; }
+        .edition-mentions { font-size: 8pt; color:#333; margin-top: 4px; text-align:center; }
+
+    </style>
+</head>
+<body>
+<div class="fiche-container">
+    <!-- Bandeau : Nom + bio-data (gauche) / Photo (droite) -->
     <table class="bandeau-table">
         <tr>
-            <td class="bandeau-texte-cell">
+            <td class="bandeau-left">
                 <div class="nom-fiche">[Nom]</div>
                 <div class="bio-data">
-                    [Donnees_genealogiques] &bull; [Metier] &bull; [Engagements]
+                    [Donnees_genealogiques] <br/>
+                    [Metier] <br/>
+                    [Engagements]
                 </div>
             </td>
-            <td class="bandeau-photo-cell">
+            <td class="bandeau-right">
                 [Photo]
             </td>
         </tr>
     </table>
 
-    <div class="details-wrapper-page1">
-        <div class="details-zone-page1">
-            [DetailsPage1]
-        </div>
-    </div>
+    <!-- Details area : left column reserved 60mm, right column contains actual text -->
+    <table class="details-table">
+        <tr>
+            <td class="details-margin"></td>
+            <td class="details-cell">
+                [DetailsPage1]
+            </td>
+        </tr>
+    </table>
 
+    <!-- Sources and edition mentions (this block should appear at bottom of page 1). The generator will position it near the page bottom. -->
     <div class="sources-zone">
-        <h3>Sources</h3>
+        <strong>Sources</strong><br/>
         [Sources]
     </div>
 
-    <div class="footer-mentions">
-        Fiche établie par <strong>[auteur]</strong> – dernière modification le [derniere_modif] – éditée le [date_du_jour]
+    <div class="sources-divider">
+        <div class="edition-mentions">
+            Fiche établie par <strong>[auteur]</strong> – dernière modification le [derniere_modif] – éditée le [date_du_jour]
+        </div>
     </div>
 </div>
+</body>
+</html>

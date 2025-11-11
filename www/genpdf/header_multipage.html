@@ -1,40 +1,36 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="utf-8" />
     <style>
         body {
             font-family: "DejaVu Sans", Arial, sans-serif;
             font-size: 10pt;
             margin: 0;
-            padding: 0 1cm;
+            padding: 0 4mm;
         }
-        .header-container {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            border-bottom: 1px solid #ccc;
-            padding-bottom: 3px;
-        }
-        .header-logo {
-            height: 1.2cm;
-            display: flex;
-            align-items: center;
-        }
-        .header-logo-img {
-            height: 100%;
-            object-fit: contain;
-        }
-        .header-logo-placeholder {
-            font-size: 8pt;
-            color: #888;
-        }
+        table.header-table { width:100%; border-collapse:collapse; }
+        td.header-logo-cell { width:3.8cm; vertical-align:middle; padding:4px 6px; }
+        td.header-text-cell { vertical-align:middle; padding-left:6px; text-align:left; }
+        .site-line { display:block; }
+        .site-title { font-size:12pt; font-weight:bold; color:#222; display:inline-block; margin-right:8px; vertical-align:middle; }
+        .site-subtitle { font-size:9pt; color:#666; display:inline-block; vertical-align:middle; }
+        img.header-logo-img { height:1.8cm; display:block; }
+        .header-separator { border-bottom:1px solid #ddd; margin-top:6px; padding-top:4px; }
     </style>
 </head>
 <body>
-    <div class="header-container">
-        <div class="header-logo">
-            [LOGO]
-        </div>
-    </div>
+    <table class="header-table" role="presentation">
+        <tr>
+            <td class="header-logo-cell">[LOGO]</td>
+            <td class="header-text-cell">
+                <div class="site-line">
+                    <span class="site-title">[SITE_TITLE]</span>
+                    <span class="site-subtitle">[SITE_SUBTITLE]</span>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <div class="header-separator"></div>
 </body>
 </html>

@@ -223,7 +223,7 @@ if (!empty($fiche['Photo'])) {
 
             <p style="margin-top:1.5rem">
                 <a class="btn" href="index.php">← Retour</a>
-                <a class="btn" href="genpdf/generer_pdf.php?id=<?= (int)$fiche['ID_fiche'] ?>" target="_blank">Télécharger PDF</a>
+                <a class="btn" href="genpdf/generer_pdf_tcpdf.php?id=<?= (int)$fiche['ID_fiche'] ?>" target="_blank">Télécharger PDF</a>
             </p>
 
             <div class="metadata" aria-hidden="false">

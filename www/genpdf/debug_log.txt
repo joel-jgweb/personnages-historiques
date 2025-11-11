@@ -1,0 +1,119 @@
+[2025-11-09 09:32:59] ==== START DEBUG generer_pdf_tcpdf_debug.php ====
+[2025-11-09 09:32:59] ID reçu : 588
+[2025-11-09 09:32:59] bootstrap.php inclus.
+[2025-11-09 09:32:59] FicheRepository.php inclus.
+[2025-11-09 09:32:59] TCPDFAdapter.php inclus.
+[2025-11-09 09:32:59] getDatabasePath() renvoie: /var/alternc/html/i/ihs/atelier/site_travail/config/../data/portraits.sqlite
+[2025-11-09 09:32:59] BDD trouvée. Taille: 8511488 bytes. is_readable: yes, is_writable: yes
+[2025-11-09 09:32:59] FicheRepository instancié.
+[2025-11-09 09:32:59] Fiche lue OK. Champs principaux:
+[2025-11-09 09:32:59]   ID_fiche => 588
+[2025-11-09 09:32:59]   Nom => BOURJAULT.
+[2025-11-09 09:32:59]   Photo => (absent)
+[2025-11-09 09:32:59]   derniere_modif => 2025-10-02 08:12:40
+[2025-11-09 09:32:59]   Donnees_genealogiques => (absent)
+[2025-11-09 09:32:59]   Metier => Employé des PTT. Courrier-auxiliaire à Hommes (Indre-et-Loire) (1913).
+[2025-11-09 09:32:59]   Engagements => (absent)
+[2025-11-09 09:32:59] MODELE_PAGE1 trouvé: /var/alternc/html/i/ihs/atelier/site_travail/www/genpdf/modele_page1.html (taille 1129 bytes)
+[2025-11-09 09:32:59] MODELE_OVERFLOW trouvé: /var/alternc/html/i/ihs/atelier/site_travail/www/genpdf/modele_overflow.html (taille 126 bytes)
+[2025-11-09 09:32:59] HEADER trouvé: /var/alternc/html/i/ihs/atelier/site_travail/www/genpdf/header_multipage.html (taille 915 bytes)
+[2025-11-09 09:32:59] FOOTER trouvé: /var/alternc/html/i/ihs/atelier/site_travail/www/genpdf/footer.html (taille 736 bytes)
+[2025-11-09 09:32:59] CSS trouvé: /var/alternc/html/i/ihs/atelier/site_travail/www/genpdf/styles_pdf.css (taille 4922 bytes)
+[2025-11-09 09:32:59] Templates et CSS chargés. CSS length: 4922
+[2025-11-09 09:32:59] Parsedown present: yes
+[2025-11-09 09:32:59] Conversion Markdown effectuée. details_html length: 175
+[2025-11-09 09:32:59] HTML page1 généré. Extrait (first 800 chars):
+
+    
+       
+        
+            ASSO TEST
+            TEST du 03/10/2025
+        
+    
+
+    
+    
+        
+            
+                BOURJAULT.
+                
+                     &bull; Employé des PTT. Courrier-auxiliaire à Hommes (Indre-et-Loire) (1913). &bull; 
+                
+            
+            
+                Pas de photo
+            
+        
+    
+
+    
+        
+            Le 27 novembre 1913, il fut élu représentant du personnel suppléant au conseil de discipline régional du Mans (Sarthe) pour le groupe XVIII (Courriers-auxiliaires).
+        
+    
+
+    
+        Sources
+        Bulletin mensuel des Postes et Télégraphes, janvier 1914
+    
+
+    
+        Fiche établie par Collectif IHS-CGT-fapt – dernière modification le
+[2025-11-09 09:32:59] Logo local trouvé et encodé: /var/alternc/html/i/ihs/atelier/site_travail/www/genpdf/../admin/data_config/logo_690ba0eb1da79.png
+[2025-11-09 09:32:59] Header HTML (excerpt):
+
+
+
+    
+        body {
+            font-family: "DejaVu Sans", Arial, sans-serif;
+            font-size: 10pt;
+            margin: 0;
+            padding: 0 1cm;
+        }
+        .header-container {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 3px;
+        }
+        .header-logo {
+            height: 1.2cm;
+            display: flex;
+            align-items: center;
+[2025-11-09 09:32:59] Footer HTML (excerpt):
+
+
+
+    
+    
+        body {
+            font-family: "DejaVu Sans", Arial, sans-serif;
+            margin: 0;
+            padding: 0 1cm;
+        }
+        .footer-content {
+            font-size: 7pt;
+            font-weight: bold;
+            width: 100%;
+            text-align: center;
+            line-height: 1.4;
+        }
+        .line1 {
+            color: #0000ff; /* bleu */
+        }
+        .line2 {
+            color: #cc0000; /* rouge */
+        }
+    
+
+
+    
+[2025-11-09 09:32:59] tmp/ créé: /var/alternc/html/i/ihs/atelier/site_travail/www/genpdf/tmp
+[2025-11-09 09:32:59] Appel adapter->generateFromHtml() pour écrire dans: /var/alternc/html/i/ihs/atelier/site_travail/www/genpdf/tmp/fiche_588_1762677179.pdf
+[2025-11-09 09:32:59] Adapter generateFromHtml() retourné: true
+[2025-11-09 09:32:59] Fichier PDF généré: /var/alternc/html/i/ihs/atelier/site_travail/www/genpdf/tmp/fiche_588_1762677179.pdf (taille: 834533 bytes)
+[2025-11-09 09:32:59] Télécharger le PDF depuis cette URL si accessible : https://xtest.testph.ihscgtfapt.fr/genpdf/tmp/fiche_588_1762677179.pdf
+[2025-11-09 09:32:59] ==== END DEBUG ====

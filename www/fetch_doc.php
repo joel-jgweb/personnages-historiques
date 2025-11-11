@@ -1,7 +1,10 @@
 <?php
 session_start();
-// Ici tu peux vérifier les droits d'accès si besoin
-
+// Vérifier connexion et permission
+if (empty($_SESSION['user_id'])) {
+    http_response_code(403);
+    exit('Accès non autorisé.');
+}
 // Charger la configuration locale (fichier non versionné en production)
 $localConfig = file_exists(__DIR__ . '/../config/config.local.php')
     ? require __DIR__ . '/../config/config.local.php'

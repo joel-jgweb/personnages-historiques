@@ -1,5 +1,15 @@
-/* styles_pdf.css */
+/* styles_pdf.css - version adaptée et corrigée pour TCPDF
+ *
+ * Principes :
+ * - Mise en page fiable via tableaux plutôt que flexbox.
+ * - Tailles exprimées en cm/mm/pt pour stabilité à l'impression.
+ * - Images : max côté 4cm, aspect conservé (width:auto; height:auto).
+ * - Réserves d'espace en haut pour l'en-tête (gérées côté TCPDF via marges),
+ *   mais CSS fixe la hauteur des zones visibles.
+ * - Éviter propriétés CSS avancées non prises en charge par TCPDF.
+ */
 
+/* Reset et optimisation */
 * {
     -webkit-font-smoothing: antialiased !important;
     -moz-osx-font-smoothing: grayscale !important;
@@ -7,6 +17,7 @@
     box-sizing: border-box;
 }
 
+/* Page */
 @page {
     size: A4;
     margin: 1cm;
@@ -17,118 +28,143 @@ body {
     font-size: 10pt;
     margin: 0;
     padding: 0;
+    color: #222;
 }
 
-/* ✅ Réserver de l'espace en bas pour la mention */
+/* Conteneur global */
 .fiche-container {
     width: 19cm;
-    /*min-height: 27.7cm; 29.7cm (A4) - 2cm (marges @page) = 27.7cm */
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    display: block;
+    margin: 0 auto;
+    /* hauteur libre : TCPDF gère le flux */
 }
 
-/* ========================================================= */
-/* En-tête */
-/* ========================================================= */
-
-.header-zone {
-    height: 3cm;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.5cm;
-}
-
-.header-logo {
-    height: 3cm;
-    width: 3cm;
-}
-
-.header-id {
-    font-size: 10pt;
-    text-align: right;
-}
-
-/* ========================================================= */
-/* Bandeau : TEXTE À GAUCHE, PHOTO À DROITE */
-/* ========================================================= */
-
-.bandeau {
-    height: 6cm;
+/* ----------------------------
+   En-tête (header)
+   ---------------------------- */
+/* header_multipage.html utilise une table ; styles utiles */
+.header-table {
     width: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    margin-bottom: 0.5cm;
+    border-collapse: collapse;
+    margin-bottom: 2mm;
 }
-
-.bandeau-texte {
-    flex: 1;
-    padding-left: 1cm;
-    padding-right: 1cm;
+.header-logo-cell {
+    width: 3.8cm;
+    vertical-align: middle;
+    padding: 2mm 4mm 2mm 0;
 }
-
-.nom-fiche {
-    font-size: 16pt;
+.header-text-cell {
+    vertical-align: middle;
+    padding-left: 4mm;
+    text-align: left;
+}
+.site-line { display: block; }
+.site-title {
+    font-size: 12pt;
     font-weight: bold;
-    text-align: left;
-    margin-top: 8px;
-    margin-bottom: 5px;
+    color: #222;
+    display: inline-block;
+    margin-right: 6px;
+    vertical-align: middle;
 }
-
-.bio-data {
-    font-size: 10pt;
-    text-align: left;
+.site-subtitle {
+    font-size: 9pt;
+    color: #666;
+    display: inline-block;
+    vertical-align: middle;
 }
-
-.bandeau-photo {
-    width: 4cm;
-    height: 4cm;
-    flex-shrink: 0;
-    margin-left: 1cm; /* ✅ espace entre texte et photo */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #ccc;
-    overflow: hidden;
-}
-
-.bandeau-photo-img {
+img.header-logo-img {
+    height: 1.8cm;
     max-width: 100%;
-    max-height: 100%;
+    display: block;
     object-fit: contain;
 }
 
-.bandeau-photo-placeholder {
-    font-size: 8pt;
-    color: #888;
+/* séparation d'entête */
+.header-separator {
+    border-bottom: 1px solid #ddd;
+    margin-top: 4px;
+    padding-top: 2px;
+}
+
+/* ----------------------------
+   Bandeau principal (texte + photo)
+   Utiliser une table pour fiabilité
+   ---------------------------- */
+.bandeau-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+    margin-bottom: 4mm;
+    height: 6cm; /* hauteur totale réservée pour bandeau */
+}
+.bandeau-texte-cell {
+    padding-left: 6mm;
+    padding-right: 6mm;
+    vertical-align: top;
+}
+.bandeau-photo-cell {
+    width: 4.2cm; /* réserve pour la photo + marge */
+    padding-left: 6mm;
+    vertical-align: top;
     text-align: center;
 }
 
-/* ========================================================= */
-/* Zone Détails – PAGE 1 */
-/* ========================================================= */
+/* Nom / meta */
+.nom-fiche {
+    font-size: 16pt;
+    font-weight: bold;
+    margin: 0 0 2mm 0;
+}
+.bio-data {
+    font-size: 10pt;
+    color: #333;
+}
 
+/* Photo : conserver l'aspect, côté max 4cm */
+.bandeau-photo-img {
+    max-width: 4cm !important;
+    max-height: 4cm !important;
+    width: auto !important;
+    height: auto !important;
+    display: block;
+    margin: 0 auto;
+    border: 1px solid #ccc;
+    object-fit: cover;
+}
+.bandeau-photo-placeholder {
+    width: 4cm;
+    height: 4cm;
+    background: #f9f9f9;
+    color: #999;
+    text-align: center;
+    line-height: 4cm;
+    border: 1px solid #eee;
+    margin: 0 auto;
+}
+
+/* ----------------------------
+   Zone détails - PAGE 1
+   ---------------------------- */
+/* On réserve une zone visuelle pour page 1 (hauteur en px adaptée à A4)
+   TCPDF gère le flux réel, on limite visuellement pour l'approche page1/overflow */
 .details-wrapper-page1 {
     margin-left: 1cm;
     padding-left: 3cm;
-    height: 364px;
-    overflow: hidden;
-    flex-shrink: 0;
+    /* hauteur indicative : environ 13cm (adapter si besoin) */
+    min-height: 12.8cm;
+    overflow: visible;
 }
-
 .details-zone-page1 {
     font-size: 10pt;
     line-height: 1.4;
-    height: 100%;
-    overflow: hidden;
     -webkit-hyphens: auto;
     -moz-hyphens: auto;
     hyphens: auto;
     word-wrap: break-word;
 }
 
+/* Indication "suite" à droite */
 .suite-indication {
     text-align: right;
     font-weight: bold;
@@ -136,82 +172,14 @@ body {
     font-size: 9pt;
 }
 
-/* ========================================================= */
-/* Sources – HAUTEUR LIBRE */
-/* ========================================================= */
-
-.sources-zone {
-    margin-top: 10px;
-    margin-bottom: 15px; /* ✅ espace avant la mention finale */
-    font-style: italic;
-    font-size: 8pt;
-    color: #666;
-    line-height: 1.3;
-    flex-shrink: 0;
-}
-
-.sources-zone h3 {
-    margin-top: 0;
-    margin-bottom: 4px;
-    font-size: 9pt;
-    font-weight: bold;
-}
-
-/* ========================================================= */
-/* Mention "Fiche établie par..." – EN BAS, CENTRÉE, AVEC LIGNE */
-/* ========================================================= */
-
-.footer-mentions {
-    margin-top: auto; /* ✅ pousse cet élément en bas */
-    padding-top: 8px;
-    border-top: 1px solid #ccc;
-    font-size: 8pt;
-    text-align: center; /* ✅ centré */
-    flex-shrink: 0;
-}
-/* ========================================================= */
-/* Bandeau avec tableau – méthode fiable pour wkhtmltopdf */
-/* ========================================================= */
-
-.bandeau-table {
-    width: 100%;
-    table-layout: fixed;
-    border-collapse: collapse;
-    margin-bottom: 0.5cm;
-    height: 6cm;
-}
-
-.bandeau-texte-cell {
-    width: auto;
-    padding-left: 1cm;
-    padding-right: 1cm;
-    vertical-align: middle;
-}
-
-.bandeau-photo-cell {
-    width: 4cm;
-    padding-left: 1cm; /* espace entre texte et photo */
-    vertical-align: middle;
-    text-align: center;
-}
-
-.bandeau-photo-cell .bandeau-photo-img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-
-.bandeau-photo-cell .bandeau-photo-placeholder {
-    font-size: 8pt;
-    color: #888;
-}
-/* Zone Détails – PAGES 2+ (même marge que page 1) */
+/* ----------------------------
+   Zone détails - PAGES SUIVANTES (overflow)
+   ---------------------------- */
 .details-wrapper-overflow {
     margin-left: 1cm;
-    padding-left: 3cm; /* identique à page 1 */
+    padding-left: 3cm;
     padding-right: 0.5cm;
 }
-
 .details-zone-overflow {
     font-size: 10pt;
     line-height: 1.4;
@@ -220,3 +188,76 @@ body {
     hyphens: auto;
     word-wrap: break-word;
 }
+
+/* ----------------------------
+   Sources
+   ---------------------------- */
+.sources-zone {
+    margin-top: 6mm;
+    margin-bottom: 6mm;
+    font-style: italic;
+    font-size: 8pt;
+    color: #666;
+    line-height: 1.3;
+}
+.sources-zone h3 {
+    margin-top: 0;
+    margin-bottom: 3px;
+    font-size: 9pt;
+    font-weight: bold;
+}
+
+/* ----------------------------
+   Footer mentions
+   ---------------------------- */
+.footer-mentions {
+    margin-top: auto;
+    padding-top: 6px;
+    border-top: 1px solid #ccc;
+    font-size: 8pt;
+    text-align: center;
+    color: #333;
+}
+
+/* footer.html utilise classes .footer-content .line1 .line2 */
+.footer-content { font-size: 7pt; font-weight: bold; width:100%; text-align:center; line-height:1.4; }
+.footer-content .line1 { color: #0000ff; }
+.footer-content .line2 { color: #cc0000; }
+
+/* ----------------------------
+   Utilitaires et impressions
+   ---------------------------- */
+.pagebreak { page-break-after: always; break-after: page; }
+
+/* petits ajustements pour TCPDF / compatibilité */
+table { border-collapse: collapse; }
+img { -ms-interpolation-mode: bicubic; }
+
+/* Classes de sécurité : limiter les éléments trop larges */
+.container { max-width: 19cm; margin: 0 auto; }
+
+/* Styles pour modèle d'overflow s'il contient titres */
+.details-zone-overflow h1,
+.details-zone-overflow h2,
+.details-zone-overflow h3 {
+    margin-top: 6px;
+    margin-bottom: 4px;
+}
+
+/* Règles pour liste et paragraphes */
+.details-zone-page1 p,
+.details-zone-overflow p {
+    margin: 0 0 6px 0;
+    text-align: justify;
+}
+
+/* Si besoin de forcer police monospace pour citations */
+.citation {
+    font-family: monospace;
+    font-size: 9pt;
+    background: #f7f7f7;
+    padding: 4px;
+    border-left: 3px solid #eee;
+}
+
+/* Fin du fichier styles_pdf.css */
