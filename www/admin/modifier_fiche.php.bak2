@@ -198,9 +198,6 @@ function extractFilenamesFromField($fieldValue) {
     .resource-list { list-style: none; padding-left: 0; }
     .resource-item { display:flex; gap:8px; align-items:center; margin-bottom:6px;}
     .resource-item button { margin-left:8px; }
-    .resource-previews { margin-top:10px; }
-    .resource-previews .preview { display:inline-block; margin:6px; text-align:center; width:110px; }
-    .resource-previews img { max-height:80px; display:block; margin:0 auto; }
     </style>
 </head>
 <body>
@@ -287,11 +284,8 @@ function extractFilenamesFromField($fieldValue) {
                         <?php foreach ($icono_files as $f): ?>
                             <li class="resource-item" data-name="<?= htmlspecialchars($f) ?>">
                                 <?php $ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
-                                if (in_array($ext, ['jpg','jpeg','png','gif','webp'])):
-                                    $thumbUrl = '../acces_docs.php?f=' . urlencode($f) . '&thumb=120';
-                                    $fullUrl = '../acces_docs.php?f=' . urlencode($f);
-                                ?>
-                                    <a href="<?= $fullUrl ?>" target="_blank" rel="noopener"><img src="<?= $thumbUrl ?>" alt="<?= htmlspecialchars($f) ?>" style="max-height:40px; margin-right:8px;"></a>
+                                if (in_array($ext, ['jpg','jpeg','png','gif','webp'])): ?>
+                                    <img src="data/docs/<?= htmlspecialchars($f) ?>" style="max-height:40px; margin-right:8px;">
                                 <?php endif; ?>
                                 <span><?= htmlspecialchars($f) ?></span>
                                 <button type="button" onclick="this.parentElement.remove(); updateHiddenList(document.getElementById('Iconographie'), document.getElementById('iconographie_list'));">Supprimer</button>
@@ -302,20 +296,6 @@ function extractFilenamesFromField($fieldValue) {
                     <?php if ($canUpload): ?>
                         <button type="button" onclick="openUploadPopup('Iconographie')">Choisir une image</button>
                     <?php endif; ?>
-
-                    <?php if (!empty($icono_files)): ?>
-                        <div class="resource-previews" aria-hidden="true">
-                            <?php foreach ($icono_files as $fn):
-                                $thumb = '../acces_docs.php?f=' . urlencode($fn) . '&thumb=120';
-                                $full = '../acces_docs.php?f=' . urlencode($fn);
-                            ?>
-                                <div class="preview">
-                                    <a href="<?= $full ?>" target="_blank" rel="noopener"><img src="<?= $thumb ?>" alt="<?= htmlspecialchars($fn) ?>"></a>
-                                    <div style="font-size:0.8em;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($fn) ?></div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
-                    <?php endif; ?>
                 </div>
 
                 <!-- Documents -->
@@ -325,13 +305,9 @@ function extractFilenamesFromField($fieldValue) {
                         <?php foreach ($doc_files as $f): ?>
                             <li class="resource-item" data-name="<?= htmlspecialchars($f) ?>">
                                 <?php $ext = strtolower(pathinfo($f, PATHINFO_EXTENSION));
-                                $fullUrl = '../acces_docs.php?f=' . urlencode($f);
-                                $downloadUrl = $fullUrl . '&download=1';
-                                if (in_array($ext, ['jpg','jpeg','png','gif','webp'])):
-                                    $thumbUrl = $fullUrl . '&thumb=120';
-                                    echo '<a href="'.$fullUrl.'" target="_blank" rel="noopener"><img src="'.$thumbUrl.'" alt="'.htmlspecialchars($f).'" style="max-height:40px;margin-right:8px;"></a>';
-                                endif;
-                                ?>
+                                if (in_array($ext, ['jpg','jpeg','png','gif','webp'])): ?>
+                                    <img src="data/docs/<?= htmlspecialchars($f) ?>" style="max-height:40px; margin-right:8px;">
+                                <?php endif; ?>
                                 <span><?= htmlspecialchars($f) ?></span>
                                 <button type="button" onclick="this.parentElement.remove(); updateHiddenList(document.getElementById('Documents'), document.getElementById('documents_list'));">Supprimer</button>
                             </li>
@@ -340,28 +316,6 @@ function extractFilenamesFromField($fieldValue) {
                     <textarea id="Documents" name="Documents" style="display:none;"><?= htmlspecialchars(implode("\n", $doc_files)) ?></textarea>
                     <?php if ($canUpload): ?>
                         <button type="button" onclick="openUploadPopup('Documents')">Choisir un document</button>
-                    <?php endif; ?>
-
-                    <?php if (!empty($doc_files)): ?>
-                        <div class="resource-previews" aria-hidden="true">
-                            <?php foreach ($doc_files as $fn):
-                                $ext = strtolower(pathinfo($fn, PATHINFO_EXTENSION));
-                                $view = '../acces_docs.php?f=' . urlencode($fn);
-                                $dl = $view . '&download=1';
-                            ?>
-                                <div class="preview">
-                                    <?php if (in_array($ext, ['jpg','jpeg','png','gif','webp'])): ?>
-                                        <a href="<?= $view ?>" target="_blank" rel="noopener"><img src="<?= $view ?>&thumb=120" alt="<?= htmlspecialchars($fn) ?>"></a>
-                                    <?php else: 
-                                        $icon = ($ext === 'pdf') ? '📄' : (($ext === 'txt') ? '📝' : (($ext === 'zip') ? '📦' : '📎'));
-                                    ?>
-                                        <a href="<?= $view ?>" target="_blank" rel="noopener" style="display:inline-block;width:60px;height:60px;line-height:60px;border:1px solid #ddd;border-radius:6px;background:#f8f9fa;text-decoration:none;"><?= $icon ?></a>
-                                    <?php endif; ?>
-                                    <div style="font-size:0.8em;overflow:hidden;text-overflow:ellipsis;"><?= htmlspecialchars($fn) ?></div>
-                                    <div><a href="<?= $dl ?>" style="font-size:0.85em;">Télécharger</a></div>
-                                </div>
-                            <?php endforeach; ?>
-                        </div>
                     <?php endif; ?>
                 </div>
 
@@ -375,18 +329,8 @@ function extractFilenamesFromField($fieldValue) {
                         <?php endif; ?>
                     </div>
                     <div>
-                        <?php if ($photo_value): 
-                            $isRemote = preg_match('#^https?://#i', $photo_value);
-                            if ($isRemote) {
-                                $previewSrc = $photo_value;
-                                $linkHref = $photo_value;
-                            } else {
-                                $bn = basename($photo_value);
-                                $previewSrc = '../acces_docs.php?f=' . urlencode($bn) . '&thumb=220';
-                                $linkHref = '../acces_docs.php?f=' . urlencode($bn);
-                            }
-                        ?>
-                            <a href="<?= $linkHref ?>" target="_blank" rel="noopener"><img id="Photo_preview" src="<?= $previewSrc ?>" style="max-width:200px;margin-top:8px;"></a>
+                        <?php if ($photo_value): ?>
+                            <img id="Photo_preview" src="data/docs/<?= htmlspecialchars($photo_value) ?>" style="max-width:200px;margin-top:8px;">
                         <?php else: ?>
                             <img id="Photo_preview" src="" style="max-width:200px; display:none; margin-top:8px;">
                         <?php endif; ?>
@@ -449,7 +393,7 @@ function extractFilenamesFromField($fieldValue) {
             if (data.field === 'Photo') {
                 document.getElementById('Photo').value = fname;
                 const preview = document.getElementById('Photo_preview');
-                if (preview) { preview.src = '../acces_docs.php?f=' + encodeURIComponent(fname) + '&thumb=220'; preview.style.display = 'block'; }
+                if (preview) { preview.src = 'data/docs/' + fname; preview.style.display = 'block'; }
             } else if (data.field === 'Iconographie') {
                 const list = document.getElementById('iconographie_list');
                 addListItem(list, fname);
@@ -472,7 +416,7 @@ function extractFilenamesFromField($fieldValue) {
             const ext = fname.split('.').pop().toLowerCase();
             if (['jpg','jpeg','png','gif','webp'].includes(ext)) {
                 const img = document.createElement('img');
-                img.src = '../acces_docs.php?f=' + encodeURIComponent(fname) + '&thumb=120';
+                img.src = 'data/docs/' + fname;
                 img.style.maxHeight = '40px';
                 img.style.marginRight = '8px';
                 li.appendChild(img);

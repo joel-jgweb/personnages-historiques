@@ -1,4 +1,20 @@
-AuthUserFile "/var/alternc/html/i/ihs/atelier/site_travail/www/.htpasswd"
+# Forcer HTTPS + gérer cas reverse-proxy (X-Forwarded-Proto)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Condition : on n'est pas en HTTPS et le proxy n'indique pas HTTPS
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !https
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>
+
+# Ajouter HSTS (appliquer uniquement si HTTPS fonctionne)
+<IfModule mod_headers.c>
+  # max-age en secondes (ici 1 an). Retirez preload si vous n'avez pas soumis le domaine au preload list.
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+</IfModule>
+
+AuthUserFile "/var/alternc/html/i/ihs/www/portraits/www/.htpasswd"
 AuthName "Zone protégée"
 AuthType Basic
 require valid-user

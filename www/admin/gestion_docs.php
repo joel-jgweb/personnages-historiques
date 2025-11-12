@@ -18,6 +18,11 @@ try {
     die("❌ Erreur BDD : " . htmlspecialchars($e->getMessage()));
 }
 
+// Inclure le helper partagé (disponible pour usage ultérieur)
+if (file_exists(__DIR__ . '/../includes/ressource_helpers.php')) {
+    require_once __DIR__ . '/../includes/ressource_helpers.php';
+}
+
 $message = '';
 $allowed_extensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'zip'];
 $max_file_size = 5 * 1024 * 1024;
@@ -136,6 +141,17 @@ $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>📁 Gestion des Documents</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="admin.css">
+    <style>
+    .grid{display:flex;flex-wrap:wrap;gap:12px}
+    .card{width:220px;border:1px solid #e3e3e3;padding:8px;border-radius:6px;background:#fff}
+    .thumbnail{height:120px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+    .thumbnail img{width:100%;height:100%;object-fit:cover;display:block}
+    .filename{font-weight:600;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .desc{font-size:0.9em;color:#666;margin-top:4px}
+    .message{padding:8px;margin-bottom:12px;border-radius:4px}
+    .success{background:#e6ffed;border:1px solid #8de19a}
+    .error{background:#ffe6e6;border:1px solid #e18d8d}
+    </style>
 </head>
 <body>
     <div class="container">
@@ -165,7 +181,7 @@ $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
 
         <!-- Recherche -->
-        <div class="search-bar">
+        <div class="search-bar" style="margin-top:16px;">
             <form method="GET">
                 <input type="text" name="q" value="<?= htmlspecialchars($search) ?>" placeholder="Rechercher par description...">
                 <button type="submit">🔍 Rechercher</button>
@@ -176,7 +192,7 @@ $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
 
         <!-- Liste des documents -->
-        <h2>📄 Gérer les documents existants (<?= count($documents) ?>)</h2>
+        <h2 style="margin-top:18px;">📄 Gérer les documents existants (<?= count($documents) ?>)</h2>
         <?php if (empty($documents)): ?>
             <p style="text-align: center; color: #6c757d;">Aucun document trouvé.</p>
         <?php else: ?>
@@ -185,14 +201,15 @@ $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <?php
                     $ext = strtolower(pathinfo($doc['nom_fichier'], PATHINFO_EXTENSION));
                     $is_image = in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp']);
+                    // URL vers acces_docs depuis www/admin -> ../acces_docs.php
                     $file_url = '../acces_docs.php?f=' . urlencode($doc['nom_fichier']);
                     ?>
                     <div class="card">
                         <div class="thumbnail">
                             <?php if ($is_image): ?>
-                                <img src="<?= $file_url ?>" alt="Miniature" style="width:100%;height:100%;object-fit:cover;">
+                                <img src="<?= $file_url ?>&thumb=160" alt="<?= htmlspecialchars($doc['nom_fichier']) ?>">
                             <?php else: ?>
-                                <span>
+                                <span style="font-size:32px;">
                                     <?php
                                     if ($ext === 'pdf') echo '📄';
                                     elseif ($ext === 'txt') echo '📝';
@@ -209,15 +226,15 @@ $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         <form method="POST" style="margin-top: 8px;">
                             <input type="hidden" name="action" value="update_desc">
                             <input type="hidden" name="md5_hash" value="<?= htmlspecialchars($doc['md5_hash']) ?>">
-                            <input type="text" name="description" value="<?= htmlspecialchars($doc['description'] ?? '') ?>" maxlength="50" placeholder="Nouvelle description">
-                            <button type="submit" style="margin-top: 5px; padding: 4px 8px; font-size: 0.8em;">✏️</button>
+                            <input type="text" name="description" value="<?= htmlspecialchars($doc['description'] ?? '') ?>" maxlength="50" placeholder="Nouvelle description" style="width:100%;box-sizing:border-box;">
+                            <button type="submit" style="margin-top:6px;padding:6px 10px">✏️ Mettre à jour</button>
                         </form>
 
                         <!-- Supprimer -->
                         <form method="POST" onsubmit="return confirm('⚠️ Supprimer ce fichier ? Cette action est irréversible.')">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="md5_hash" value="<?= htmlspecialchars($doc['md5_hash']) ?>">
-                            <button type="submit" class="btn-delete">🗑️ Supprimer</button>
+                            <button type="submit" class="btn-delete" style="margin-top:8px;background:#ffefef;border:1px solid #e18d8d;padding:6px 8px">🗑️ Supprimer</button>
                         </form>
                     </div>
                 <?php endforeach; ?>

@@ -4,17 +4,20 @@
 // - utilise prepared statements seulement si nécessaire (params non vides)
 // - respecte le default_search_mode (config.local.php ou BDD) : 'all' | 'name'
 // - journalise la requête SQL + params via error_log() pour debug léger
+// - affiche correctement les miniatures (utilise acces_docs.php?f=...&thumb=... quand possible)
 
-// Charger la configuration locale
+
+// Charger la configuration locale (attention : si absent, on ne doit pas require le mauvais fichier)
 $localConfig = file_exists(__DIR__ . '/../config/config.local.php')
-    ? require __DIR__ . '/../config/config.php'
+    ? require __DIR__ . '/../config/config.local.php'
     : [];
 
 // Inclure helpers (getDatabasePath etc.)
 require_once __DIR__ . '/bootstrap.php';
 
-// DB path
+// DB path et dossier docs
 $databasePath = isset($localConfig['database_path']) ? $localConfig['database_path'] : (__DIR__ . '/../data/portraits.sqlite');
+$docsDir = rtrim($localConfig['docs_path'] ?? __DIR__ . '/../data/docs/', '/\\') . '/';
 
 try {
     $pdo = new PDO("sqlite:$databasePath");
@@ -102,6 +105,11 @@ try {
     $fiches = [];
 }
 
+// Construire base URL vers acces_docs.php en tenant compte du chemin (fonctionne depuis /www/)
+$scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '');
+$scriptDir = ($scriptDir === '/' || $scriptDir === '\\') ? '' : $scriptDir;
+$accesDocsBase = $scriptDir . '/acces_docs.php';
+
 // --- Affichage HTML des résultats (grille de cartes) ---
 ?>
 <!DOCTYPE html>
@@ -155,16 +163,37 @@ try {
             <?php else: ?>
                 <?php foreach ($fiches as $fiche): ?>
                     <div class="fiche-card">
-                        <?php if (!empty($fiche['Photo'])): ?>
-                            <div class="card-photo">
-                                <?php
-                                // déterminer un chemin web pour la photo : si stockée dans data/docs/ on l'utilise
-                                $photoSrc = $fiche['Photo'];
-                                $candidate = __DIR__ . '/../data/docs/' . basename($fiche['Photo']);
-                                if (file_exists($candidate)) {
-                                    $photoSrc = '../data/docs/' . basename($fiche['Photo']);
+                        <?php
+                        // déterminer un chemin web pour la photo : si stockée dans data/docs/ on passe par acces_docs.php pour avoir un thumb
+                        $photoSrc = '';
+                        $showPhotoBlock = false;
+                        if (!empty($fiche['Photo'])) {
+                            $photoVal = trim((string)$fiche['Photo']);
+                            if (preg_match('#^https?://#i', $photoVal)) {
+                                // URL distante, utiliser directement
+                                $photoSrc = $photoVal;
+                                $showPhotoBlock = true;
+                            } else {
+                                $bn = basename($photoVal);
+                                if (file_exists($docsDir . $bn)) {
+                                    // utiliser acces_docs.php pour thumb (fonctionne depuis /www/)
+                                    $photoSrc = $accesDocsBase . '?f=' . rawurlencode($bn) . '&thumb=220';
+                                    $showPhotoBlock = true;
+                                } else {
+                                    // fallback : tentative d'accès direct dans ../data/docs/
+                                    $candidate = __DIR__ . '/../data/docs/' . $bn;
+                                    if (file_exists($candidate)) {
+                                        $photoSrc = '../data/docs/' . $bn;
+                                        $showPhotoBlock = true;
+                                    } else {
+                                        // pas de photo trouvée physiquement, on n'affiche pas le bloc
+                                        $showPhotoBlock = false;
+                                    }
                                 }
-                                ?>
+                            }
+                        }
+                        if ($showPhotoBlock): ?>
+                            <div class="card-photo">
                                 <img src="<?= htmlspecialchars($photoSrc) ?>" alt="Photo de <?= htmlspecialchars($fiche['Nom']) ?>" loading="lazy">
                             </div>
                         <?php endif; ?>
