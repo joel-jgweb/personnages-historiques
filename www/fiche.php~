@@ -1,6 +1,6 @@
 <?php
 // fiche.php — Affiche le détail d'une fiche
-// Mise à jour du 12/11/2025: affiche uniquement "Iconographie" + miniatures et "Documents" + tableau description / bouton Télécharger
+// Mise à jour : affiche uniquement "Iconographie" + miniatures et "Documents" + tableau description / bouton Télécharger
 //             : pour les fichiers associés, récupère la description depuis la table gesdoc.nom_fichier si présente
 
 $localConfig = file_exists(__DIR__ . '/../config/config.local.php') ? require __DIR__ . '/../config/config.local.php' : [];
