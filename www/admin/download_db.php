@@ -5,7 +5,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 require_once 'permissions.php';
-checkUserPermission([1, 2, 6]);
+checkUserPermission([1]);
 
 // Chemin vers la base de données
 $dbPath = '../../data/portraits.sqlite';
@@ -21,4 +21,5 @@ header('Content-Length: ' . filesize($dbPath));
 
 readfile($dbPath);
 exit;
+
 ?>
