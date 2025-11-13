@@ -205,7 +205,7 @@ function extractFilenamesFromField($fieldValue) {
 </head>
 <body>
     <div class="container">
-        <a href="download_db.php" class="btn-download">📥 Télécharger la base</a>
+        <!--<a href="download_db.php" class="btn-download">📥 Télécharger la base</a>-->
         <h1>🔍 Rechercher et Modifier une Fiche</h1>
         <?php if ($message): ?><?= $message ?><?php endif; ?>
 
@@ -492,4 +492,5 @@ function extractFilenamesFromField($fieldValue) {
         }
     </script>
 </body>
+
 </html>
