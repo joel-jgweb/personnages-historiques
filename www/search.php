@@ -1,11 +1,10 @@
 <?php
-// search.php — Version V3 corrigée et robuste
+// search.php — Version V3 corrigée et robuste + liens dynamiques sur NOMS majuscules (interactive/AJAX)
 // - construit la requête SQL uniquement avec les conditions présentes
 // - utilise prepared statements seulement si nécessaire (params non vides)
 // - respecte le default_search_mode (config.local.php ou BDD) : 'all' | 'name'
 // - journalise la requête SQL + params via error_log() pour debug léger
 // - affiche correctement les miniatures (utilise acces_docs.php?f=...&thumb=... quand possible)
-
 
 // Charger la configuration locale (attention : si absent, on ne doit pas require le mauvais fichier)
 $localConfig = file_exists(__DIR__ . '/../config/config.local.php')
@@ -86,7 +85,6 @@ if ($periode !== '') {
 $sql .= " ORDER BY LOWER(Nom) ASC";
 
 // Debug log : enregistrer la requête et les paramètres pour diagnostic (sera visible dans error log)
-// Retirer ou commenter cette ligne en production si nécessaire
 error_log("search.php SQL: " . $sql . " ; params=" . json_encode($params));
 
 // Exécution : utiliser query() si pas de params, sinon prepare/execute
@@ -109,6 +107,28 @@ try {
 $scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '');
 $scriptDir = ($scriptDir === '/' || $scriptDir === '\\') ? '' : $scriptDir;
 $accesDocsBase = $scriptDir . '/acces_docs.php';
+
+// --------- Helpers pour l'extrait dynamique lié ---------
+function details_excerpt_linked($details, $maxlen = 250) {
+    // On tronque proprement, tout en conservant des noms cliquables
+    // Si Parsedown dispo : conversion Markdown
+    // Sinon : simple nl2br
+    if (class_exists('Parsedown')) {
+        $pd = new Parsedown();
+        if (method_exists($pd, 'setSafeMode')) $pd->setSafeMode(true);
+        $excerpt_md = mb_substr($details, 0, $maxlen);
+        $html = $pd->text($excerpt_md);
+    } else {
+        $html = nl2br(htmlspecialchars(mb_substr($details, 0, $maxlen)));
+    }
+    // Ajout liens dynamiques sur NOMS en majuscules
+    $html = preg_replace(
+        '/\b([A-ZÉÈÀÇÙÎÔÛËÏÜ][A-ZÉÈÀÇÙÎÔÛËÏÜ\s\-]{1,})\b/u',
+        '<span class="linked-biography" data-nom="$1">$1</span>',
+        $html
+    );
+    return $html;
+}
 
 // --- Affichage HTML des résultats (grille de cartes) ---
 ?>
@@ -200,7 +220,7 @@ $accesDocsBase = $scriptDir . '/acces_docs.php';
                         <div class="card-content">
                             <h3 class="card-title"><?= htmlspecialchars($fiche['Nom']) ?></h3>
                             <div class="card-meta"><strong>Métier :</strong> <?= htmlspecialchars($fiche['Metier'] ?? '—') ?></div>
-                            <div class="card-excerpt"><?= nl2br(htmlspecialchars(substr(strip_tags($fiche['Details'] ?? ''), 0, 250))) ?><?= (strlen(strip_tags($fiche['Details'] ?? '')) > 250 ? '...' : '') ?></div>
+                            <div class="card-excerpt"><?= details_excerpt_linked($fiche['Details'] ?? '') ?><?= (strlen(strip_tags($fiche['Details'] ?? '')) > 250 ? '...' : '') ?></div>
                             <a class="btn-view" href="fiche.php?id=<?= (int)$fiche['ID_fiche'] ?>">Voir le détail</a>
                         </div>
                     </div>
@@ -208,5 +228,7 @@ $accesDocsBase = $scriptDir . '/acces_docs.php';
             <?php endif; ?>
         </div>
     </div>
+    <!-- Ajout du JS d'interaction -->
+    <script src="js/biographie-linker.js"></script>
 </body>
 </html>
